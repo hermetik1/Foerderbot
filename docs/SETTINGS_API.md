@@ -4,16 +4,50 @@ This document describes the settings REST API endpoints and usage.
 
 ## Overview
 
-The plugin provides REST API endpoints for managing settings across 5 groups:
-- **General**: Site-wide plugin configuration
+The plugin provides REST API endpoints for managing settings across 7 groups:
+- **General**: Site-wide plugin configuration (includes floating bubble settings)
 - **Privacy**: GDPR and data protection settings
 - **Branding**: White-label customization
 - **Knowledge**: Knowledge base configuration
 - **Analytics**: Usage tracking settings
+- **Integrations**: API keys and external service configuration
+- **Accounts**: User account and profile settings
 
 ## Authentication
 
 All endpoints require the `manage_options` capability (typically admin users).
+
+## Security Features
+
+### API Key Masking
+For security, API keys in the **Integrations** group are automatically masked in GET responses:
+- Original key: `sk-1234567890abcdef`
+- Masked response: `************cdef` (shows last 4 characters only)
+
+### API Key Updates
+When updating settings:
+- If you send a masked value (starts with `*`), the original key is preserved
+- To update a key, send the new plain-text value
+- Empty values preserve existing keys
+- This prevents accidental key deletion when updating other fields
+
+**Example workflow:**
+```javascript
+// 1. GET returns masked keys
+const settings = await settingsAPI.get('integrations');
+// { openai_api_key: '************cdef' }
+
+// 2. Update other fields without changing keys
+await settingsAPI.update('integrations', {
+  openai_api_key: '************cdef',  // Preserved
+  rag_service: 'new-service'           // Updated
+});
+
+// 3. Update key with new value
+await settingsAPI.update('integrations', {
+  openai_api_key: 'sk-new-key-value'   // Updated
+});
+```
 
 ## Endpoints
 
