@@ -1,4 +1,5 @@
-# 🧠 KI_Kraft – Dual Chatbot Plugin (WordPress 6.7+)
+# **Kraft AI Chat** ist ein modernes WordPress‑Plugin (Stand 2025), das zwei Chatbots vereint: einen **FAQ‑Bot** für Gäste und einen **Mitglieder‑Bot*** Beim Enqueue des Widgets wird ein JS‑Objekt `KraftAIChatConfig.branding` via `wp  * **Avatar‑Button** (oben): rund (28–32 px), Quelle `KraftAIChatConfig.user.avatarUrl`; Fallback Initialen (1–2 Buchstaben). Klick öffnet Sidebar.localize_script()` übergeb* **Kraft AI Chat** (Hauptmenü)n (z. B. `{ primary: "#0ea5e9", logoUrl: 2. Aktivieren → **Admin‑Menü „Kraft AI Chat“** erscheint.…" }`).für eingeloggte Nutzer. Es ist DSGVO‑konform, vollständig **White‑Label‑fähig**, Multisite‑ready und setzt auf eine **React‑basierte Admin‑UI** mit REST‑First‑Architektur, i18n und A11y (WCAG AA). Kraft AI Chat – Dual Chatbot Pl  * Shortcode: `[kraft_ai_chat_chatbot type="faq"]`
+  * Block: **Kraft AI Chat → FAQ Chatbot** (mit Live‑Preview)in (WordPress 6.7+)
 
 **KI_Kraft** ist ein modernes WordPress‑Plugin (Stand 2025), das zwei Chatbots vereint: einen **FAQ‑Bot** für Gäste und einen **Mitglieder‑Bot** für eingeloggte Nutzer. Es ist DSGVO‑konform, vollständig **White‑Label‑fähig**, Multisite‑ready und setzt auf eine **React‑basierte Admin‑UI** mit REST‑First‑Architektur, i18n und A11y (WCAG AA).
 
@@ -79,8 +80,8 @@
 | ---------- | --------------------------------------------------------------- |
 | Admin‑UI   | React 18 + `@wordpress/scripts` + (optional) Tailwind           |
 | Frontend   | Lightweight React/Preact (Widget) + CSS‑Variablen (Light/Dark)  |
-| Backend    | WordPress **REST API** (`ki_kraft/v1`)                          |
-| Daten      | Custom Tables + CPT `ki_kraft_conversation`                     |
+| Backend    | WordPress **REST API** (`kraft_ai_chat/v1`)                          |
+| Daten      | Custom Tables + CPT `kraft_ai_chat_conversation`                     |
 | Sicherheit | Nonces, Caps, Prepared SQL, Output‑Escaping, Rate‑Limits        |
 | DSGVO      | Exporter/Eraser, Retention‑Cron, Opt‑in‑Flows                   |
 | i18n       | PHP: `__()/_x()` • JS: `wp.i18n` + `wp_localize_script` (DE/EN) |
@@ -93,15 +94,15 @@
 
 | Typ    | Name/Route                           | Beschreibung                                          |
 | ------ | ------------------------------------ | ----------------------------------------------------- |
-| Action | `ki_kraft_register_routes`           | Registriert alle REST‑Routen beim Init                |
-| Filter | `ki_kraft_chat_response`             | Post‑Processing/Moderation/Übersetzung der Antwort    |
-| REST   | `POST /ki_kraft/v1/faq/query`        | FAQ‑Suche (Fuzzy + Vektor), liefert Antwort + Quellen |
-| REST   | `POST /ki_kraft/v1/member/session`   | Legt Mitglieds‑Session an                             |
-| REST   | `GET /ki_kraft/v1/member/sessions`   | Listet eigene Sessions (Pagination)                   |
-| REST   | `POST /ki_kraft/v1/member/message`   | Fragt RAG mit Rollen‑Scope an                         |
-| REST   | `POST /ki_kraft/v1/member/upload`    | Nimmt Upload an; Extract → Chunk → Embed              |
-| REST   | `POST /ki_kraft/v1/member/handoff`   | Übergibt Gespräch an Geschäftsstelle (Ticket/E‑Mail)  |
-| REST   | `GET /ki_kraft/v1/analytics/summary` | Aggregierte Analytics (Top/Unanswered/Trends)         |
+| Action | `kraft_ai_chat_register_routes`           | Registriert alle REST‑Routen beim Init                |
+| Filter | `kraft_ai_chat_chat_response`             | Post‑Processing/Moderation/Übersetzung der Antwort    |
+| REST   | `POST /kraft_ai_chat/v1/faq/query`        | FAQ‑Suche (Fuzzy + Vektor), liefert Antwort + Quellen |
+| REST   | `POST /kraft_ai_chat/v1/member/session`   | Legt Mitglieds‑Session an                             |
+| REST   | `GET /kraft_ai_chat/v1/member/sessions`   | Listet eigene Sessions (Pagination)                   |
+| REST   | `POST /kraft_ai_chat/v1/member/message`   | Fragt RAG mit Rollen‑Scope an                         |
+| REST   | `POST /kraft_ai_chat/v1/member/upload`    | Nimmt Upload an; Extract → Chunk → Embed              |
+| REST   | `POST /kraft_ai_chat/v1/member/handoff`   | Übergibt Gespräch an Geschäftsstelle (Ticket/E‑Mail)  |
+| REST   | `GET /kraft_ai_chat/v1/analytics/summary` | Aggregierte Analytics (Top/Unanswered/Trends)         |
 
 ---
 
@@ -178,16 +179,16 @@
 ## 🗂️ Projektstruktur (empfohlen)
 
 ```plaintext
-ki-kraft/
-├── ki-kraft.php
+kraft-ai-chat/
+├── kraft-ai-chat.php
 ├── includes/
-│   ├── class-ki-kraft-core.php
-│   ├── class-ki-kraft-rest.php
-│   ├── class-ki-kraft-faq.php
-│   ├── class-ki-kraft-member.php
-│   ├── class-ki-kraft-privacy.php
-│   ├── class-ki-kraft-branding.php
-│   └── class-ki-kraft-indexer.php        # Upload/Extract/Embeddings
+│   ├── class-kraft-ai-chat-core.php
+│   ├── class-kraft-ai-chat-rest.php
+│   ├── class-kraft-ai-chat-faq.php
+│   ├── class-kraft-ai-chat-member.php
+│   ├── class-kraft-ai-chat-privacy.php
+│   ├── class-kraft-ai-chat-branding.php
+│   └── class-kraft-ai-chat-indexer.php        # Upload/Extract/Embeddings
 ├── admin/                                 # React-Admin-App
 │   ├── index.tsx
 │   ├── app/
@@ -214,7 +215,7 @@ ki-kraft/
 │   ├── data/ (api.ts, i18n-client.ts)
 │   └── styles/ (base.css/layout.css/components.css/themes.css)
 ├── assets/ (build output: js/css)
-├── languages/ (ki-kraft-de_DE.*, ki-kraft-en_US.*)
+├── languages/ (kraft-ai-chat-de_DE.*, kraft-ai-chat-en_US.*)
 ├── tests/ (PHPUnit)
 ├── scripts/ (build-plugin.js/verify-zip.js/sync-version.js)
 └── README.md
@@ -267,10 +268,10 @@ ki-kraft/
 
 ### REST‑Mapping (Mitglieder)
 
-* **Senden:** `POST /ki_kraft/v1/member/message` (Rate‑Limit; `Retry-After` UI‑Countdown)
-* **Verlauf:** `GET /ki_kraft/v1/member/sessions?limit=20&before=<ts>`
-* **Upload:** `POST /ki_kraft/v1/member/upload` (Cap‑gated)
-* **Handoff:** `POST /ki_kraft/v1/member/handoff`
+* **Senden:** `POST /kraft_ai_chat/v1/member/message` (Rate‑Limit; `Retry-After` UI‑Countdown)
+* **Verlauf:** `GET /kraft_ai_chat/v1/member/sessions?limit=20&before=<ts>`
+* **Upload:** `POST /kraft_ai_chat/v1/member/upload` (Cap‑gated)
+* **Handoff:** `POST /kraft_ai_chat/v1/member/handoff`
 
 ### A11y & Tastatursteuerung
 
@@ -304,14 +305,14 @@ ki-kraft/
 4. Optional: OpenAI API‑Key hinterlegen (Embeddings/Completions) — nur mit Opt‑in.
 5. **Shortcode** in Seite/Beitrag einfügen:
 
-   * FAQ‑Bot: `[ki_kraft_chatbot type="faq"]`
-   * Mitglieder‑Bot: `[ki_kraft_chatbot type="member"]` (nur sichtbar für eingeloggte Nutzer)
+   * FAQ‑Bot: `[kraft_ai_chat_chatbot type="faq"]`
+   * Mitglieder‑Bot: `[kraft_ai_chat_chatbot type="member"]` (nur sichtbar für eingeloggte Nutzer)
 
 ---
 
 ## 🌍 Internationalisierung (i18n)
 
-* Textdomain: `ki-kraft`.
+* Textdomain: `kraft-ai-chat`.
 * PHP‑Strings ausschließlich via `__()/_x()/_n()`.
 * JS‑Strings über `wp_localize_script`/`@wordpress/i18n` (DE/EN Bundles); **Fallback EN**.
 * Frontend‑**Language‑Toggle** im Rail (DE/EN), persistiert (user_meta oder LocalStorage).
@@ -363,7 +364,7 @@ ki-kraft/
 
 ## 🛠️ Build & Release
 
-* `npm run build:plugin` erzeugt `dist/ki-kraft.zip` (nur Produktionsartefakte).
+* `npm run build:plugin` erzeugt `dist/kraft-ai-chat.zip` (nur Produktionsartefakte).
 * Ausschlüsse: `.git`, `.github`, `tests`, `node_modules`, `vendor`.
 * `scripts/verify-zip.js` prüft Paketinhalt; `scripts/sync-version.js` synchronisiert Versionen (PHP/JSON).
 
@@ -372,7 +373,7 @@ ki-kraft/
 ## 🤝 Mitwirken & Sicherheitshinweise
 
 * **Contribution Guide** in `DEVELOPERS.md` (Coding Standards, Commits, Branching).
-* Sicherheitsrelevante Meldungen **vertraulich** an `security@ki-kraft.at`.
+* Sicherheitsrelevante Meldungen **vertraulich** an `security@kraft-ai-chat.com`.
 
 ---
 
@@ -385,7 +386,7 @@ ki-kraft/
 ## 🔮 Roadmap (Auszug)
 
 * Web‑Component Wrapper für Widget (Shadow DOM).
-* Optionaler KI_Kraft Cloud Index Connector.
+* Optionaler Kraft AI Chat Cloud Index Connector.
 * Admin‑Onboarding Wizard (erste Schritte + Live‑Checks).
 * Tenant‑übergreifende Wissens‑Federation (Multisite‑Cluster).
 
