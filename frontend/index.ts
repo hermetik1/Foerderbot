@@ -107,6 +107,8 @@ class KIKraftWidget {
 	private sessionId: string | null = null;
 	private isTyping = false;
 	private isFloating = false;
+	private sessions: any[] = [];
+	private currentSessionId: string | null = null;
 
 	constructor() {
 		this.init();
@@ -139,6 +141,12 @@ class KIKraftWidget {
 		// Check if member chat requires login
 		if (type === 'member' && !config.user.loggedIn) {
 			this.renderLoginPrompt();
+			return;
+		}
+
+		// Check for fullscreen mode (member type without floating class)
+		if (type === 'member' && !this.isFloating) {
+			this.renderFullscreen();
 			return;
 		}
 
@@ -232,11 +240,98 @@ class KIKraftWidget {
 		`;
 	}
 
+	private renderFullscreen() {
+		if (!this.container) return;
+
+		const branding = window.kraftAIChatBranding;
+		const config = window.kraftAIChatConfig;
+		const savedTheme = localStorage.getItem('kk_theme') || 'light';
+		const sidebarOpen = localStorage.getItem('kk_member_sidebar_open') !== 'false';
+
+		this.container.innerHTML = `
+			<div class="kk-fullscreen" role="application" aria-label="Mitglieder-Chat">
+				<aside class="kk-rail" data-theme="${savedTheme}" aria-label="Navigation">
+					${
+						config.user.loggedIn && config.user.avatarUrl
+							? `<img src="${config.user.avatarUrl}" class="kk-rail-avatar" alt="${config.user.displayName || 'User'}" />`
+							: '<div class="kk-rail-btn kk-rail-avatar" title="Profil">👤</div>'
+					}
+					<button class="kk-rail-btn kk-rail-new" title="Neue Unterhaltung">＋</button>
+					<button class="kk-rail-btn kk-rail-collapse" title="Seitenleiste ein-/ausklappen">❮</button>
+					<button class="kk-rail-btn kk-rail-search" title="Suchen">🔎</button>
+					<div class="kk-rail-lang" aria-label="Sprache">EN</div>
+					<button class="kk-rail-btn kk-rail-settings" title="Einstellungen">⚙️</button>
+				</aside>
+
+				<section class="kk-sidebar ${sidebarOpen ? 'open' : ''}" data-theme="${savedTheme}" aria-label="Chatbereich">
+					<header class="kk-sidebar__header">
+						<div class="kk-header-left">
+							<div class="kk-brand">
+								${branding.logo_url ? `<img class="kk-brand-logo" src="${branding.logo_url}" alt="${branding.product_name}" />` : ''}
+								<span class="kk-brand-title">${branding.advisor_header_title || 'Berater-Chat'}</span>
+							</div>
+							<div class="kk-conv-title"></div>
+						</div>
+						<div class="kk-header-actions">
+							<button class="kk-header-close" aria-label="Schließen">✕</button>
+						</div>
+					</header>
+
+					<div class="kk-body">
+						<nav class="kk-history" aria-label="Conversations">
+							<div class="kk-history-search">
+								<input type="search" class="kk-history-search-input" placeholder="Search..." />
+							</div>
+							<button class="kk-new-chat-btn">+ New Chat</button>
+							<div class="kk-history-list">
+								<!-- Conversation items will be rendered here -->
+							</div>
+						</nav>
+
+						<main class="kk-chat" role="log" aria-live="polite" aria-relevant="additions">
+							<div class="kk-messages">
+								<!-- Messages will be rendered here -->
+							</div>
+						</main>
+					</div>
+
+					<footer class="kk-composer">
+						<button class="kk-mic-btn" aria-label="Spracheingabe">🎤</button>
+						<textarea class="kk-input" rows="1" placeholder="Nachricht schreiben..."></textarea>
+						<button class="kk-send-btn" aria-label="Senden">✈️</button>
+					</footer>
+
+					<div class="kk-legal">
+						<span class="kk-legal-text">${branding.footer_text || ''}</span>
+						${branding.privacy_url ? `<a class="kk-legal-link" href="${branding.privacy_url}">Datenschutzerklärung</a>` : ''}
+					</div>
+				</section>
+			</div>
+		`;
+
+		this.sidebarOpen = sidebarOpen;
+		this.attachEventListeners();
+		this.loadSessions();
+	}
+
 	private renderLoginPrompt() {
 		if (!this.container) return;
 
-		// Get account page URL from config or use default
-		const accountUrl = '/account/'; // This should come from settings
+		// Get login URL from settings with fallback chain
+		const settings = window.kraftAIChatConfig.settings || {};
+		const accounts = settings.accounts || {};
+		let loginUrl = '/wp-login.php'; // Default fallback
+
+		// Priority: profile_url_override > profile_url > account_page_id permalink > default
+		if (accounts.profile_url_override) {
+			loginUrl = accounts.profile_url_override;
+		} else if (accounts.profile_url) {
+			loginUrl = accounts.profile_url;
+		} else if (accounts.account_page_id) {
+			// In a real implementation, this would resolve to the permalink
+			// For now, use a reasonable fallback
+			loginUrl = '/account/';
+		}
 		
 		if (this.isFloating) {
 			this.container.innerHTML = `
@@ -251,16 +346,18 @@ class KIKraftWidget {
 						<button class="kk-close-btn" aria-label="Close">✕</button>
 					</div>
 					<div class="kk-login-prompt">
+						<h3>Mitglieder-Chat</h3>
 						<p>Bitte melde dich an, um den Mitglieder-Chat zu nutzen.</p>
-						<a href="${accountUrl}" class="kk-btn">Jetzt einloggen</a>
+						<a href="${loginUrl}" class="kk-btn">Jetzt einloggen</a>
 					</div>
 				</div>
 			`;
 		} else {
 			this.container.innerHTML = `
 				<div class="kk-login-prompt">
+					<h3>Mitglieder-Chat</h3>
 					<p>Bitte melde dich an, um den Mitglieder-Chat zu nutzen.</p>
-					<a href="${accountUrl}" class="kk-btn">Jetzt einloggen</a>
+					<a href="${loginUrl}" class="kk-btn">Jetzt einloggen</a>
 				</div>
 			`;
 		}
@@ -319,10 +416,49 @@ class KIKraftWidget {
 			}
 		});
 
-		// ESC key to close sidebar
+		// Fullscreen mode specific events
+		const railNew = this.container.querySelector('.kk-rail-new');
+		const railCollapse = this.container.querySelector('.kk-rail-collapse');
+		const railSettings = this.container.querySelector('.kk-rail-settings');
+		const headerClose = this.container.querySelector('.kk-header-close');
+		const newChatBtn = this.container.querySelector('.kk-new-chat-btn');
+		const micBtn = this.container.querySelector('.kk-mic-btn');
+
+		railNew?.addEventListener('click', () => this.createNewChat());
+		railCollapse?.addEventListener('click', () => this.toggleFullscreenSidebar());
+		railSettings?.addEventListener('click', () => this.toggleTheme());
+		headerClose?.addEventListener('click', () => this.closeFullscreen());
+		newChatBtn?.addEventListener('click', () => this.createNewChat());
+		micBtn?.addEventListener('click', () => this.handleVoiceInput());
+
+		// History item clicks (delegate)
+		const historyList = this.container.querySelector('.kk-history-list');
+		historyList?.addEventListener('click', (e) => {
+			const target = e.target as HTMLElement;
+			const item = target.closest('.kk-history-item');
+			
+			if (target.closest('.kk-history-rename')) {
+				e.stopPropagation();
+				const sessionId = item?.getAttribute('data-session-id');
+				if (sessionId) this.renameSession(sessionId);
+			} else if (target.closest('.kk-history-delete')) {
+				e.stopPropagation();
+				const sessionId = item?.getAttribute('data-session-id');
+				if (sessionId) this.deleteSession(sessionId);
+			} else if (item) {
+				const sessionId = item.getAttribute('data-session-id');
+				if (sessionId) this.loadSession(sessionId);
+			}
+		});
+
+		// ESC key to close sidebar or fullscreen
 		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape' && this.sidebarOpen) {
-				this.toggleSidebar();
+			if (e.key === 'Escape') {
+				if (this.container?.querySelector('.kk-fullscreen')) {
+					this.closeFullscreen();
+				} else if (this.sidebarOpen) {
+					this.toggleSidebar();
+				}
 			}
 		});
 	}
@@ -394,6 +530,201 @@ class KIKraftWidget {
 
 		rail?.setAttribute('data-theme', newTheme);
 		sidebar?.setAttribute('data-theme', newTheme);
+		
+		// Save theme preference
+		localStorage.setItem('kk_theme', newTheme);
+	}
+
+	private toggleFullscreenSidebar() {
+		if (!this.container) return;
+
+		const sidebar = this.container.querySelector('.kk-sidebar');
+		if (!sidebar) return;
+
+		this.sidebarOpen = !this.sidebarOpen;
+		
+		if (this.sidebarOpen) {
+			sidebar.classList.add('open');
+		} else {
+			sidebar.classList.remove('open');
+		}
+
+		localStorage.setItem('kk_member_sidebar_open', this.sidebarOpen.toString());
+	}
+
+	private closeFullscreen() {
+		if (!this.container) return;
+		const fullscreen = this.container.querySelector('.kk-fullscreen');
+		if (fullscreen) {
+			// For now, just hide it. In a real app, this might navigate away
+			this.container.style.display = 'none';
+		}
+	}
+
+	private handleVoiceInput() {
+		// Placeholder for voice input functionality
+		console.log('Voice input not yet implemented');
+	}
+
+	private async loadSessions() {
+		if (!window.kraftAIChatConfig.apiUrl) return;
+
+		try {
+			const response = await fetch(`${window.kraftAIChatConfig.apiUrl}/member/sessions`, {
+				method: 'GET',
+				headers: {
+					'X-WP-Nonce': window.kraftAIChatConfig.nonce,
+				},
+			});
+
+			if (!response.ok) {
+				console.error('Failed to load sessions');
+				return;
+			}
+
+			const data = await response.json();
+			this.sessions = data.success ? (data.data || []) : [];
+			this.renderSessions();
+		} catch (error) {
+			console.error('Error loading sessions:', error);
+		}
+	}
+
+	private renderSessions() {
+		if (!this.container) return;
+
+		const historyList = this.container.querySelector('.kk-history-list');
+		if (!historyList) return;
+
+		if (this.sessions.length === 0) {
+			historyList.innerHTML = '<div style="text-align:center;color:var(--kk-text-muted);padding:20px;">No conversations yet</div>';
+			return;
+		}
+
+		historyList.innerHTML = this.sessions.map(session => `
+			<div class="kk-history-item ${session.session_id === this.currentSessionId ? 'active' : ''}" data-session-id="${session.session_id}">
+				<span class="kk-history-title">${this.escapeHtml(session.title || 'Untitled')}</span>
+				<div class="kk-history-actions">
+					<button class="kk-history-rename" title="Umbenennen">✎</button>
+					<button class="kk-history-delete" title="Löschen">🗑</button>
+				</div>
+			</div>
+		`).join('');
+	}
+
+	private async createNewChat() {
+		try {
+			const response = await fetch(`${window.kraftAIChatConfig.apiUrl}/member/session`, {
+				method: 'POST',
+				headers: {
+					'X-WP-Nonce': window.kraftAIChatConfig.nonce,
+				},
+			});
+
+			if (!response.ok) {
+				console.error('Failed to create session');
+				return;
+			}
+
+			const data = await response.json();
+			if (data.success && data.data.session_id) {
+				this.sessionId = data.data.session_id;
+				this.currentSessionId = data.data.session_id;
+				this.messages = [];
+				await this.loadSessions();
+				this.renderMessages();
+				
+				// Focus input
+				const input = this.container?.querySelector('.kk-input') as HTMLTextAreaElement;
+				input?.focus();
+			}
+		} catch (error) {
+			console.error('Error creating new chat:', error);
+		}
+	}
+
+	private async loadSession(sessionId: string) {
+		if (!window.kraftAIChatConfig.apiUrl) return;
+
+		try {
+			const response = await fetch(`${window.kraftAIChatConfig.apiUrl}/member/session/${sessionId}/messages`, {
+				method: 'GET',
+				headers: {
+					'X-WP-Nonce': window.kraftAIChatConfig.nonce,
+				},
+			});
+
+			if (!response.ok) {
+				console.error('Failed to load session messages');
+				return;
+			}
+
+			const data = await response.json();
+			if (data.success) {
+				this.currentSessionId = sessionId;
+				this.sessionId = sessionId;
+				this.messages = data.data || [];
+				this.renderSessions(); // Re-render to update active state
+				this.renderMessages();
+			}
+		} catch (error) {
+			console.error('Error loading session:', error);
+		}
+	}
+
+	private async renameSession(sessionId: string) {
+		const currentSession = this.sessions.find(s => s.session_id === sessionId);
+		const newTitle = prompt('Neuer Titel:', currentSession?.title || '');
+		
+		if (!newTitle || newTitle === currentSession?.title) return;
+
+		try {
+			const response = await fetch(`${window.kraftAIChatConfig.apiUrl}/member/session/${sessionId}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.kraftAIChatConfig.nonce,
+				},
+				body: JSON.stringify({ title: newTitle }),
+			});
+
+			if (response.ok) {
+				await this.loadSessions();
+			}
+		} catch (error) {
+			console.error('Error renaming session:', error);
+		}
+	}
+
+	private async deleteSession(sessionId: string) {
+		if (!confirm('Diese Unterhaltung wirklich löschen?')) return;
+
+		try {
+			const response = await fetch(`${window.kraftAIChatConfig.apiUrl}/member/session/${sessionId}`, {
+				method: 'DELETE',
+				headers: {
+					'X-WP-Nonce': window.kraftAIChatConfig.nonce,
+				},
+			});
+
+			if (response.ok) {
+				if (this.currentSessionId === sessionId) {
+					this.currentSessionId = null;
+					this.sessionId = null;
+					this.messages = [];
+					this.renderMessages();
+				}
+				await this.loadSessions();
+			}
+		} catch (error) {
+			console.error('Error deleting session:', error);
+		}
+	}
+
+	private escapeHtml(text: string): string {
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
 	}
 
 	private async createSession() {
@@ -501,8 +832,10 @@ class KIKraftWidget {
 		const messagesContainer = this.container.querySelector('.kk-messages');
 		if (!messagesContainer) return;
 
+		const isFullscreen = !!this.container.querySelector('.kk-fullscreen');
+
 		messagesContainer.innerHTML = this.messages
-			.map((msg) => {
+			.map((msg, index) => {
 				const sourcesHtml =
 					msg.sources && msg.sources.length > 0
 						? `<div class="kk-sources">
@@ -515,21 +848,111 @@ class KIKraftWidget {
 						</div>`
 						: '';
 
-				return `
-					<div class="kk-message ${msg.role}">
-						<div class="kk-bubble ${msg.role}">
-							${msg.content}
-							${sourcesHtml}
+				// Add message actions for bot messages in fullscreen mode
+				const actionsHtml = isFullscreen && msg.role === 'assistant' && index === this.messages.length - 1
+					? `<div class="kk-message-actions">
+						<button class="kk-msg-copy" title="Kopieren" data-msg-index="${index}">📋</button>
+						<button class="kk-msg-retry" title="Neu generieren" data-msg-index="${index}">🔄</button>
+						<button class="kk-msg-like" title="Gefällt mir" data-msg-index="${index}">👍</button>
+						<button class="kk-msg-dislike" title="Gefällt mir nicht" data-msg-index="${index}">👎</button>
+						<button class="kk-msg-delete" title="Löschen" data-msg-index="${index}">🗑</button>
+					</div>`
+					: '';
+
+				if (isFullscreen) {
+					return `
+						<div class="kk-message ${msg.role}">
+							<div class="kk-message-content">
+								${msg.content}
+								${sourcesHtml}
+							</div>
+							${actionsHtml}
 						</div>
-					</div>
-				`;
+					`;
+				} else {
+					return `
+						<div class="kk-message ${msg.role}">
+							<div class="kk-bubble ${msg.role}">
+								${msg.content}
+								${sourcesHtml}
+							</div>
+						</div>
+					`;
+				}
 			})
 			.join('');
+
+		// Attach action listeners
+		if (isFullscreen) {
+			messagesContainer.querySelectorAll('.kk-msg-copy').forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					const index = parseInt((e.target as HTMLElement).dataset.msgIndex || '0');
+					this.copyMessage(index);
+				});
+			});
+
+			messagesContainer.querySelectorAll('.kk-msg-retry').forEach(btn => {
+				btn.addEventListener('click', () => this.retryLastMessage());
+			});
+
+			messagesContainer.querySelectorAll('.kk-msg-like, .kk-msg-dislike').forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					const index = parseInt((e.target as HTMLElement).dataset.msgIndex || '0');
+					const isLike = (e.target as HTMLElement).classList.contains('kk-msg-like');
+					this.rateMessage(index, isLike);
+				});
+			});
+
+			messagesContainer.querySelectorAll('.kk-msg-delete').forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					const index = parseInt((e.target as HTMLElement).dataset.msgIndex || '0');
+					this.deleteMessage(index);
+				});
+			});
+		}
 
 		// Scroll to bottom
 		const chatContainer = this.container.querySelector('.kk-chat');
 		if (chatContainer) {
 			chatContainer.scrollTop = chatContainer.scrollHeight;
+		}
+	}
+
+	private copyMessage(index: number) {
+		const msg = this.messages[index];
+		if (msg) {
+			navigator.clipboard.writeText(msg.content).then(() => {
+				console.log('Message copied to clipboard');
+			}).catch(err => {
+				console.error('Failed to copy:', err);
+			});
+		}
+	}
+
+	private retryLastMessage() {
+		// Find the last user message and resend it
+		for (let i = this.messages.length - 1; i >= 0; i--) {
+			if (this.messages[i].role === 'user') {
+				const input = this.container?.querySelector('.kk-input') as HTMLTextAreaElement;
+				if (input) {
+					input.value = this.messages[i].content;
+					this.sendMessage();
+				}
+				break;
+			}
+		}
+	}
+
+	private rateMessage(index: number, isLike: boolean) {
+		// Placeholder for feedback functionality
+		console.log(`Message ${index} rated:`, isLike ? 'like' : 'dislike');
+		// In a real implementation, this would send feedback to the server
+	}
+
+	private deleteMessage(index: number) {
+		if (confirm('Diese Nachricht wirklich löschen?')) {
+			this.messages.splice(index, 1);
+			this.renderMessages();
 		}
 	}
 

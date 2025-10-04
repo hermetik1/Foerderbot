@@ -32,7 +32,7 @@ function kraft_ai_chat_set_schema_version( $version ) {
  */
 function kraft_ai_chat_maybe_upgrade_schema() {
 	$current_version = kraft_ai_chat_get_schema_version();
-	$target_version  = 1; // Current schema version
+	$target_version  = 2; // Current schema version
 	
 	if ( $current_version >= $target_version ) {
 		return; // Already up to date
@@ -42,6 +42,11 @@ function kraft_ai_chat_maybe_upgrade_schema() {
 	if ( $current_version < 1 ) {
 		kraft_ai_chat_create_tables_v1();
 		kraft_ai_chat_set_schema_version( 1 );
+	}
+	
+	if ( $current_version < 2 ) {
+		kraft_ai_chat_upgrade_to_v2();
+		kraft_ai_chat_set_schema_version( 2 );
 	}
 }
 
@@ -86,6 +91,60 @@ function kraft_ai_chat_create_tables_v1() {
 		KEY created_at (created_at)
 	) $charset_collate;";
 	dbDelta( $sql );
+}
+
+/**
+ * Upgrade to schema version 2 - Add title and updated_at to sessions.
+ */
+function kraft_ai_chat_upgrade_to_v2() {
+	global $wpdb;
+	
+	$table_name = $wpdb->prefix . 'kraft_ai_chat_sessions';
+	
+	// Check if title column exists
+	$column_exists = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+			WHERE TABLE_SCHEMA = %s 
+			AND TABLE_NAME = %s 
+			AND COLUMN_NAME = 'title'",
+			DB_NAME,
+			$table_name
+		)
+	);
+	
+	if ( empty( $column_exists ) ) {
+		$wpdb->query(
+			"ALTER TABLE {$table_name} 
+			ADD COLUMN title varchar(255) DEFAULT NULL AFTER context"
+		);
+	}
+	
+	// Check if updated_at column exists
+	$column_exists = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+			WHERE TABLE_SCHEMA = %s 
+			AND TABLE_NAME = %s 
+			AND COLUMN_NAME = 'updated_at'",
+			DB_NAME,
+			$table_name
+		)
+	);
+	
+	if ( empty( $column_exists ) ) {
+		$wpdb->query(
+			"ALTER TABLE {$table_name} 
+			ADD COLUMN updated_at datetime DEFAULT NULL AFTER created_at"
+		);
+		
+		// Set updated_at to created_at for existing records
+		$wpdb->query(
+			"UPDATE {$table_name} 
+			SET updated_at = created_at 
+			WHERE updated_at IS NULL"
+		);
+	}
 }
 
 /**
