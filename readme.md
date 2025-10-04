@@ -1,6 +1,6 @@
 🧠 KI_Kraft – Dual Chatbot Plugin (WordPress 6.7+)
 
-**KI_Kraft** ist ein modernes WordPress-Plugin (Stand 2025), das zwei intelligente Chatbots vereint:
+**KI_Kraft_Chatbot** ist ein modernes WordPress-Plugin (Stand 2025), das zwei intelligente Chatbots vereint:
 einen **FAQ-Bot** für Gäste und einen **Mitglieder-Bot** für eingeloggte Nutzer.  
 Beide sind DSGVO-konform, vollständig white-label-fähig und nutzen moderne WordPress-Technologien
 (React, REST API, Tailwind, i18n, Privacy Tools, Multisite Support).
@@ -112,6 +112,15 @@ Das Analytics-System dient auch als Grundlage für Auto-FAQ-Vorschläge.
 Fehlerhafte REST-Antworten (5xx oder 429) werden protokolliert und optional im Dashboard hervorgehoben.
 
 ---
+### 🔌 Wichtige Hooks & REST Endpoints
+
+| Typ | Name | Beschreibung |
+|------|------|---------------|
+| Action | `ki_kraft_register_routes` | Initialisiert REST-Routen beim Plugin-Load |
+| Filter | `ki_kraft_chat_response` | Manipuliert generierte Antworten (z. B. Moderation, Translation) |
+| REST | `/ki_kraft/v1/faq/query` | Liefert relevante Antworten aus FAQ-Vektordatenbank |
+| REST | `/ki_kraft/v1/member/upload` | Nimmt Member-Uploads entgegen |
+| REST | `/ki_kraft/v1/analytics` | Gibt anonyme Statistikdaten zurück |
 
 ## 🧱 Technische Architektur
 
@@ -131,21 +140,95 @@ Fehlerhafte REST-Antworten (5xx oder 429) werden protokolliert und optional im D
 ## 🧭 Geplante Struktur
 
 ki-kraft/
-├─ ki-kraft.php
-├─ includes/
-│ ├─ class-ki-kraft-core.php
-│ ├─ class-ki-kraft-rest.php
-│ ├─ class-ki-kraft-faq.php
-│ ├─ class-ki-kraft-member.php
-│ ├─ class-ki-kraft-privacy.php
-│ └─ class-ki-kraft-branding.php
-├─ admin/
-│ └─ App.js (React Interface)
-├─ assets/
-│ ├─ js/
-│ └─ css/
-├─ languages/
-└─ README.md
+├── ki-kraft.php
+├── includes/
+│   ├── class-ki-kraft-core.php
+│   ├── class-ki-kraft-rest.php
+│   ├── class-ki-kraft-faq.php
+│   ├── class-ki-kraft-member.php
+│   ├── class-ki-kraft-privacy.php
+│   ├── class-ki-kraft-branding.php
+│   └── class-ki-kraft-indexer.php        # Upload/Extract/Embeddings
+├── admin/                                 # React-Admin-App
+│   ├── index.tsx
+│   ├── app/
+│   │   ├── routes/                        # Tabs/Pages (Settings, Privacy, …
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── Settings/
+│   │   │   │   ├── GeneralTab.tsx
+│   │   │   │   ├── PrivacyTab.tsx
+│   │   │   │   ├── WhiteLabelTab.tsx
+│   │   │   │   ├── KnowledgeTab.tsx
+│   │   │   │   └── AnalyticsTab.tsx
+│   │   ├── components/
+│   │   │   ├── forms/
+│   │   │   │   ├── TextField.tsx
+│   │   │   │   ├── SwitchField.tsx
+│   │   │   │   ├── ColorField.tsx
+│   │   │   │   └── FileField.tsx
+│   │   │   ├── charts/
+│   │   │   │   ├── TrendChart.tsx
+│   │   │   │   └── TopList.tsx
+│   │   │   ├── layout/
+│   │   │   │   ├── Card.tsx
+│   │   │   │   └── Page.tsx
+│   │   │   └── feedback/
+│   │   │       ├── Notice.tsx
+│   │   │       └── Spinner.tsx
+│   │   ├── lib/
+│   │   │   ├── api.ts                     # REST calls (fetch wrappers)
+│   │   │   ├── i18n.ts                    # @wordpress/i18n helpers
+│   │   │   ├── schema.ts                  # zod/yup schemas (optional)
+│   │   │   ├── store.ts                   # @wordpress/data store
+│   │   │   └── utils.ts
+│   │   ├── styles/
+│   │   │   ├── index.css                  # Admin-Entry (imports the rest)
+│   │   │   ├── components.css
+│   │   │   ├── forms.css
+│   │   │   ├── charts.css
+│   │   │   └── layout.css
+│   │   └── __tests__/                      # Vitest Admin
+│   └── vite.config.ts / wp-scripts config
+├── frontend/                               # Chat-Widget (Rail/Sidebar)
+│   ├── index.ts                            # entry: mounts widget(s)
+│   ├── ui/
+│   │   ├── Rail.ts
+│   │   ├── Sidebar.ts
+│   │   ├── ChatWindow.ts
+│   │   ├── MessageList.ts
+│   │   ├── Composer.ts
+│   │   └── Badges.ts
+│   ├── features/
+│   │   ├── language-toggle.ts
+│   │   ├── theme-toggle.ts
+│   │   ├── rate-limit.ts
+│   │   └── accessibility.ts               # focus trap, aria-live
+│   ├── data/
+│   │   ├── api.ts                         # REST calls for chat
+│   │   └── i18n-client.ts                 # uses window.KIKraftConfig.labels
+│   ├── styles/
+│   │   ├── base.css
+│   │   ├── layout.css
+│   │   ├── components.css
+│   │   └── themes.css                     # CSS variables (light/dark)
+│   └── __tests__/                         # Vitest Frontend
+├── assets/                                 # built artifacts (output target)
+│   ├── js/
+│   └── css/
+├── languages/
+│   ├── ki-kraft-de_DE.po/mo
+│   └── ki-kraft-en_US.po/mo
+├── tests/                                  # PHPUnit
+│   ├── bootstrap.php
+│   ├── RestRoutesTest.php
+│   ├── PrivacyExporterTest.php
+│   └── RateLimitTest.php
+├── scripts/
+│   ├── build-plugin.js
+│   ├── verify-zip.js
+│   └── sync-version.js
+└── README.md
+
 
 yaml
 Code kopieren
@@ -157,6 +240,15 @@ Code kopieren
 - Verwende `npm install` und `npm run build:plugin` für Builds.  
 - PHP-Code validieren mit `phpcs --standard=WordPress`.  
 - Tests ausführen via `npm run test` (Vitest) und `vendor/bin/phpunit`.
+
+### 🧪 Continuous Integration
+Das Projekt nutzt GitHub Actions für:
+- Linting (`phpcs`, `eslint`, `prettier`)
+- Static Analysis (`phpstan`)
+- Unit Tests (PHPUnit & Vitest)
+- Build Verification (`npm run build:plugin`)
+- Security Audit (`npm audit`)
+
 
 ---
 
