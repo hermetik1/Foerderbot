@@ -547,4 +547,125 @@ class Test_Settings_REST extends WP_UnitTestCase {
 		$response = rest_do_request( $request );
 		$this->assertEquals( 400, $response->get_status() );
 	}
+
+	/**
+	 * Test footer merge with older options (missing floating keys).
+	 * 
+	 * This simulates an existing installation that has old settings
+	 * without the new floating bubble keys.
+	 */
+	public function test_footer_renders_with_old_settings() {
+		// Simulate old installation: save general settings without floating keys
+		update_option(
+			'kraft_ai_chat_general',
+			array(
+				'site_enabled' => true,
+				'faq_enabled'  => false,
+				// Missing: floating_enabled, floating_default_type, floating_position
+			)
+		);
+
+		// Load core class
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-core.php';
+		$core = new KI_Kraft_Core();
+
+		// Capture output from render_floating_bubble
+		ob_start();
+		$core->render_floating_bubble();
+		$output = ob_get_clean();
+
+		// Should not render bubble since floating_enabled defaults to false
+		$this->assertEmpty( $output, 'Bubble should not render when floating_enabled is false (default)' );
+
+		// Now enable floating bubble
+		update_option(
+			'kraft_ai_chat_general',
+			array(
+				'site_enabled'     => true,
+				'floating_enabled' => true,
+				// Still missing: floating_default_type, floating_position
+			)
+		);
+
+		// Capture output again
+		ob_start();
+		$core->render_floating_bubble();
+		$output = ob_get_clean();
+
+		// Should now render bubble with defaults merged
+		$this->assertStringContainsString( 'kk-widget', $output, 'Bubble should render when enabled' );
+		$this->assertStringContainsString( 'kk-floating', $output, 'Should have floating class' );
+		$this->assertStringContainsString( 'kk-pos-br', $output, 'Should default to bottom-right position' );
+		$this->assertStringContainsString( 'data-type="faq"', $output, 'Should default to FAQ type' );
+	}
+
+	/**
+	 * Test migration function adds missing keys.
+	 */
+	public function test_migration_adds_missing_keys() {
+		// Simulate old installation
+		update_option(
+			'kraft_ai_chat_general',
+			array(
+				'site_enabled' => true,
+				'faq_enabled'  => false,
+			)
+		);
+
+		// Load core class and run migration
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-core.php';
+		$core = new KI_Kraft_Core();
+		
+		// Use reflection to call private method
+		$reflection = new ReflectionClass( $core );
+		$method     = $reflection->getMethod( 'maybe_migrate_general_defaults' );
+		$method->setAccessible( true );
+		$method->invoke( $core );
+
+		// Get updated option
+		$updated = get_option( 'kraft_ai_chat_general' );
+
+		// Verify all default keys are present
+		$this->assertArrayHasKey( 'floating_enabled', $updated, 'Should have floating_enabled key' );
+		$this->assertArrayHasKey( 'floating_default_type', $updated, 'Should have floating_default_type key' );
+		$this->assertArrayHasKey( 'floating_position', $updated, 'Should have floating_position key' );
+
+		// Verify defaults are correct
+		$this->assertFalse( $updated['floating_enabled'], 'floating_enabled should default to false' );
+		$this->assertEquals( 'faq', $updated['floating_default_type'], 'floating_default_type should default to faq' );
+		$this->assertEquals( 'br', $updated['floating_position'], 'floating_position should default to br' );
+
+		// Verify original values preserved
+		$this->assertTrue( $updated['site_enabled'], 'Original site_enabled should be preserved' );
+		$this->assertFalse( $updated['faq_enabled'], 'Original faq_enabled should be preserved' );
+	}
+
+	/**
+	 * Test that footer doesn't render in admin context.
+	 */
+	public function test_footer_not_rendered_in_admin() {
+		// Enable floating bubble
+		update_option(
+			'kraft_ai_chat_general',
+			array(
+				'site_enabled'     => true,
+				'floating_enabled' => true,
+			)
+		);
+
+		// Set admin flag
+		set_current_screen( 'dashboard' );
+
+		// Load core class
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-core.php';
+		$core = new KI_Kraft_Core();
+
+		// Capture output
+		ob_start();
+		$core->render_floating_bubble();
+		$output = ob_get_clean();
+
+		// Should not render in admin
+		$this->assertEmpty( $output, 'Bubble should not render in admin context' );
+	}
 }
