@@ -263,39 +263,8 @@ const WhiteLabelTab: React.FC = () => {
 					</button>
 				</div>
 			</form>
-					</div>
-
-					<div className="form-group">
-						<label htmlFor="imprint_url">Imprint URL</label>
-						<input
-							type="url"
-							id="imprint_url"
-							value={config.imprint_url}
-							onChange={(e) => setConfig({ ...config, imprint_url: e.target.value })}
-							placeholder="https://example.com/imprint"
-						/>
-					</div>
-
-					<div className="form-group">
-						<label>
-							<input
-								type="checkbox"
-								checked={config.powered_by}
-								onChange={(e) => setConfig({ ...config, powered_by: e.target.checked })}
-							/>
-							{' '}Show "Powered by KI Kraft" attribution
-						</label>
-					</div>
-				</div>
-
-				<div className="form-actions">
-					<button type="submit" className="button button-primary" disabled={saving}>
-						{saving ? 'Saving...' : 'Save Branding Settings'}
-					</button>
-				</div>
-			</form>
-		</div>
-	);
+</div>
+);
 };
 
 export default WhiteLabelTab;
