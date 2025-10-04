@@ -414,3 +414,157 @@
 	border-top: 1px solid var(--kk-border);
 }
 
+/* Settings Page Styles */
+.ki-kraft-settings-page {
+	padding: 0;
+	max-width: 100%;
+	margin: 0;
+	background: #f0f0f1;
+}
+
+.settings-header {
+	background: var(--kk-surface);
+	border-bottom: 1px solid var(--kk-border);
+	padding: 20px;
+}
+
+.settings-header h1 {
+	margin: 0 0 8px 0;
+	font-size: 24px;
+	color: var(--kk-text);
+}
+
+.settings-header p {
+	margin: 0;
+	color: var(--kk-text-muted);
+	font-size: 14px;
+}
+
+.settings-search {
+	padding: 15px 20px;
+	background: var(--kk-surface);
+	border-bottom: 1px solid var(--kk-border);
+}
+
+.settings-search-input {
+	width: 100%;
+	max-width: 400px;
+	padding: 8px 12px;
+	border: 1px solid var(--kk-border);
+	border-radius: 6px;
+	font-size: 14px;
+}
+
+.settings-search-input:focus {
+	outline: none;
+	box-shadow: var(--kk-focus);
+	border-color: var(--kk-primary);
+}
+
+.settings-layout {
+	display: flex;
+	min-height: calc(100vh - 200px);
+}
+
+.settings-sidebar {
+	width: 240px;
+	background: var(--kk-surface);
+	border-right: 1px solid var(--kk-border);
+	padding: 20px 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.settings-sidebar button {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+	background: transparent;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	color: var(--kk-text);
+	font-size: 14px;
+	text-align: left;
+	transition: all 0.2s;
+	width: 100%;
+}
+
+.settings-sidebar button:hover {
+	background: var(--kk-surface-2);
+}
+
+.settings-sidebar button.active {
+	background: var(--kk-primary);
+	color: var(--kk-primary-contrast);
+	font-weight: 500;
+}
+
+.settings-sidebar button .icon {
+	font-size: 18px;
+}
+
+.settings-sidebar button .label {
+	flex: 1;
+}
+
+.settings-content {
+	flex: 1;
+	padding: 20px;
+	overflow-y: auto;
+}
+
+.settings-footer {
+	background: var(--kk-surface);
+	border-top: 1px solid var(--kk-border);
+	padding: 20px;
+}
+
+.disclaimer {
+	max-width: 900px;
+	margin: 0 auto;
+}
+
+.disclaimer h3 {
+	margin-top: 0;
+	font-size: 16px;
+	color: var(--kk-text);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.disclaimer p {
+	font-size: 13px;
+	color: var(--kk-text-muted);
+	line-height: 1.6;
+	margin-bottom: 10px;
+}
+
+.disclaimer a {
+	color: var(--kk-primary);
+	text-decoration: none;
+}
+
+.disclaimer a:hover {
+	text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+	.settings-layout {
+		flex-direction: column;
+	}
+	
+	.settings-sidebar {
+		width: 100%;
+		border-right: none;
+		border-bottom: 1px solid var(--kk-border);
+		padding: 10px;
+	}
+	
+	.settings-sidebar button {
+		padding: 10px 12px;
+	}
+}
