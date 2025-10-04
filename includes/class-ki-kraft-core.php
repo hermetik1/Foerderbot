@@ -443,12 +443,17 @@ class KI_Kraft_Core {
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'user'     => $this->get_user_config(),
 				'branding' => KI_Kraft_Branding::get_config(),
+				'settings' => array(
+					'general'  => get_option( 'kraft_ai_chat_general', array() ),
+					'accounts' => get_option( 'kraft_ai_chat_accounts', array() ),
+				),
 				'i18n'     => array(
 					'send'        => __( 'Send', KRAFT_AI_CHAT_TEXTDOMAIN ),
 					'typing'      => __( 'Typing...', KRAFT_AI_CHAT_TEXTDOMAIN ),
 					'placeholder' => __( 'Type your message...', KRAFT_AI_CHAT_TEXTDOMAIN ),
 					'close'       => __( 'Close', KRAFT_AI_CHAT_TEXTDOMAIN ),
 				),
+				'version'  => KRAFT_AI_CHAT_VERSION,
 			)
 		);
 		

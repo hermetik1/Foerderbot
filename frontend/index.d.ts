@@ -5,26 +5,51 @@ import './styles/base.css';
 import './styles/layout.css';
 import './styles/components.css';
 import './styles/themes.css';
+interface BrandingConfig {
+    product_name: string;
+    primary_color: string;
+    secondary_color: string;
+    theme: string;
+    icon_color: string;
+    header_text_color: string;
+    faq_header_title: string;
+    advisor_header_title: string;
+    logo_url?: string;
+    favicon_url?: string;
+    footer_text?: string;
+    privacy_url?: string;
+    imprint_url?: string;
+    powered_by?: boolean;
+}
+interface KraftAIChatSettings {
+    general: Record<string, any>;
+    accounts: Record<string, any>;
+}
+interface KraftAIChatConfig {
+    apiUrl: string;
+    nonce: string;
+    version: string;
+    user: {
+        loggedIn: boolean;
+        userId?: number;
+        displayName?: string;
+        avatarUrl?: string;
+        roles?: string[];
+    };
+    branding: BrandingConfig;
+    settings: KraftAIChatSettings;
+    i18n: {
+        send: string;
+        typing: string;
+        placeholder: string;
+        close: string;
+    };
+}
 declare global {
     interface Window {
-        KIKraftConfig: {
-            apiUrl: string;
-            nonce: string;
-            user: {
-                loggedIn: boolean;
-                userId?: number;
-                displayName?: string;
-                avatarUrl?: string;
-                roles?: string[];
-            };
-            branding: any;
-            i18n: {
-                send: string;
-                typing: string;
-                placeholder: string;
-                close: string;
-            };
-        };
+        kraftAIChatConfig: KraftAIChatConfig;
+        kraftAIChatBranding: BrandingConfig;
+        KIKraftConfig: KraftAIChatConfig;
     }
 }
 declare class KIKraftWidget {

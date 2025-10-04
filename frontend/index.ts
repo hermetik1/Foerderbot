@@ -13,28 +13,88 @@ interface Message {
 	sources?: Array<{ title: string; score: number }>;
 }
 
+interface BrandingConfig {
+	product_name: string;
+	primary_color: string;
+	secondary_color: string;
+	theme: string;
+	icon_color: string;
+	header_text_color: string;
+	faq_header_title: string;
+	advisor_header_title: string;
+	logo_url?: string;
+	favicon_url?: string;
+	footer_text?: string;
+	privacy_url?: string;
+	imprint_url?: string;
+	powered_by?: boolean;
+}
+
+interface KraftAIChatSettings {
+	general: Record<string, any>;
+	accounts: Record<string, any>;
+}
+
+interface KraftAIChatConfig {
+	apiUrl: string;
+	nonce: string;
+	version: string;
+	user: {
+		loggedIn: boolean;
+		userId?: number;
+		displayName?: string;
+		avatarUrl?: string;
+		roles?: string[];
+	};
+	branding: BrandingConfig;
+	settings: KraftAIChatSettings;
+	i18n: {
+		send: string;
+		typing: string;
+		placeholder: string;
+		close: string;
+	};
+}
+
 declare global {
 	interface Window {
-		KIKraftConfig: {
-			apiUrl: string;
-			nonce: string;
-			user: {
-				loggedIn: boolean;
-				userId?: number;
-				displayName?: string;
-				avatarUrl?: string;
-				roles?: string[];
-			};
-			branding: any;
-			i18n: {
-				send: string;
-				typing: string;
-				placeholder: string;
-				close: string;
-			};
-		};
+		kraftAIChatConfig: KraftAIChatConfig;
+		kraftAIChatBranding: BrandingConfig;
+		KIKraftConfig: KraftAIChatConfig; // Legacy support
 	}
 }
+
+// 🧠 Universal Safe Config Initialization
+// Ensure window.kraftAIChatConfig always exists with safe defaults
+window.kraftAIChatConfig = window.kraftAIChatConfig || {} as KraftAIChatConfig;
+window.kraftAIChatConfig.branding = window.kraftAIChatConfig.branding || {} as BrandingConfig;
+window.kraftAIChatConfig.settings = window.kraftAIChatConfig.settings || { general: {}, accounts: {} };
+window.kraftAIChatConfig.user = window.kraftAIChatConfig.user || { loggedIn: false };
+window.kraftAIChatConfig.i18n = window.kraftAIChatConfig.i18n || {
+	send: 'Send',
+	typing: 'Typing...',
+	placeholder: 'Type your message...',
+	close: 'Close'
+};
+
+const DEFAULT_BRANDING: BrandingConfig = {
+	product_name: 'Chat Assistant',
+	primary_color: '#2563eb',
+	secondary_color: '#60a5fa',
+	theme: 'auto',
+	icon_color: '#2563eb',
+	header_text_color: '#111827',
+	faq_header_title: 'Häufige Fragen',
+	advisor_header_title: 'Mitglieder-Chat',
+};
+
+// ✅ Merge defaults with localized config
+const branding: BrandingConfig = { ...DEFAULT_BRANDING, ...window.kraftAIChatConfig.branding };
+// Expose unified branding globally for use in components
+window.kraftAIChatBranding = branding;
+
+// Legacy support: Keep KIKraftConfig as alias to kraftAIChatConfig
+window.KIKraftConfig = window.kraftAIChatConfig;
 
 class KIKraftWidget {
 	private container: HTMLElement | null = null;
@@ -71,7 +131,7 @@ class KIKraftWidget {
 		if (!this.container) return;
 
 		const type = this.container.getAttribute('data-type') || 'faq';
-		const config = window.KIKraftConfig;
+		const config = window.kraftAIChatConfig;
 
 		// Check if member chat requires login
 		if (type === 'member' && !config.user.loggedIn) {
@@ -81,18 +141,21 @@ class KIKraftWidget {
 
 		// Floating mode: render bubble + sidebar
 		if (this.isFloating) {
-			this.renderFloating(type, config);
+			this.renderFloating(type);
 		} else {
 			// Regular mode: render rail + sidebar
-			this.renderRegular(type, config);
+			this.renderRegular(type);
 		}
 
 		this.attachEventListeners();
 		this.restoreState();
 	}
 
-	private renderFloating(type: string, config: any) {
+	private renderFloating(type: string) {
 		if (!this.container) return;
+
+		const branding = window.kraftAIChatBranding;
+		const config = window.kraftAIChatConfig;
 
 		this.container.innerHTML = `
 			<button class="kk-floating-bubble" aria-label="Open chat" title="Chat">
@@ -102,7 +165,7 @@ class KIKraftWidget {
 			<div class="kk-sidebar" data-theme="light" style="display: none;">
 				<div class="kk-sidebar__header">
 					<div class="kk-header-info">
-						<strong>${config.branding.product_name || 'KI Kraft'}</strong>
+						<strong>${branding.product_name}</strong>
 						<span class="kk-type-badge">${type.toUpperCase()}</span>
 					</div>
 					<button class="kk-close-btn" aria-label="Close">✕</button>
@@ -122,8 +185,11 @@ class KIKraftWidget {
 		`;
 	}
 
-	private renderRegular(type: string, config: any) {
+	private renderRegular(type: string) {
 		if (!this.container) return;
+
+		const branding = window.kraftAIChatBranding;
+		const config = window.kraftAIChatConfig;
 
 		this.container.innerHTML = `
 			<div class="kk-rail" data-theme="light">
@@ -143,7 +209,7 @@ class KIKraftWidget {
 			<div class="kk-sidebar" data-theme="light">
 				<div class="kk-sidebar__header">
 					<div class="kk-header-info">
-						<strong>${config.branding.product_name || 'KI Kraft'}</strong>
+						<strong>${branding.product_name}</strong>
 						<span class="kk-type-badge">${type.toUpperCase()}</span>
 					</div>
 					<button class="kk-close-btn" aria-label="Close">✕</button>
@@ -292,7 +358,7 @@ class KIKraftWidget {
 			sidebar.classList.add('open');
 		}
 
-		if (!this.sessionId && window.KIKraftConfig.user.loggedIn) {
+		if (!this.sessionId && window.kraftAIChatConfig.user.loggedIn) {
 			this.createSession();
 		}
 	}
@@ -329,10 +395,10 @@ class KIKraftWidget {
 
 	private async createSession() {
 		try {
-			const response = await fetch(`${window.KIKraftConfig.apiUrl}/member/session`, {
+			const response = await fetch(`${window.kraftAIChatConfig.apiUrl}/member/session`, {
 				method: 'POST',
 				headers: {
-					'X-WP-Nonce': window.KIKraftConfig.nonce,
+					'X-WP-Nonce': window.kraftAIChatConfig.nonce,
 				},
 			});
 			const data = await response.json();
@@ -373,11 +439,11 @@ class KIKraftWidget {
 				body = { query: message };
 			}
 
-			const response = await fetch(`${window.KIKraftConfig.apiUrl}${endpoint}`, {
+			const response = await fetch(`${window.kraftAIChatConfig.apiUrl}${endpoint}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					'X-WP-Nonce': window.KIKraftConfig.nonce,
+					'X-WP-Nonce': window.kraftAIChatConfig.nonce,
 				},
 				body: JSON.stringify(body),
 			});
