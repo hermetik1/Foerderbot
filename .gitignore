@@ -20,3 +20,4 @@ phpcs.xml.dist
 phpstan.neon.dist
 *.d.ts
 *.d.ts.map
+test-widget-config.html
