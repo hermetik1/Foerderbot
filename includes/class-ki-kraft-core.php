@@ -515,53 +515,12 @@ class KI_Kraft_Core {
 	 * Register default settings on activation.
 	 */
 	private function register_default_settings() {
-		$settings_groups = array(
-			'general'   => array(
-				'site_enabled'       => true,
-				'default_lang'       => 'de',
-				'cache_enabled'      => true,
-				'cache_ttl'          => 86400,
-				'rate_limit_enabled' => true,
-				'rate_limit_max'     => 60,
-				'rate_limit_window'  => 3600,
-			),
-			'privacy'   => array(
-				'retention_enabled'      => true,
-				'retention_days'         => 365,
-				'external_ai_enabled'    => false,
-				'consent_required'       => true,
-				'data_export_enabled'    => true,
-				'data_erase_enabled'     => true,
-				'collect_local_analytics' => false,
-			),
-			'branding'  => array(
-				'logo_url'        => '',
-				'product_name'    => 'KI Kraft',
-				'primary_color'   => '#3b82f6',
-				'secondary_color' => '#60a5fa',
-				'favicon_url'     => '',
-				'footer_text'     => '',
-				'privacy_url'     => '',
-				'imprint_url'     => '',
-				'powered_by'      => true,
-			),
-			'knowledge' => array(
-				'chunk_max_tokens'  => 500,
-				'chunk_overlap'     => 50,
-				'similarity_threshold' => 0.7,
-				'max_results'       => 5,
-			),
-			'analytics' => array(
-				'enabled'         => true,
-				'retention_days'  => 90,
-				'anonymize_ip'    => true,
-				'track_feedback'  => true,
-			),
-		);
+		$groups = array( 'general', 'privacy', 'branding', 'knowledge', 'analytics', 'integrations', 'accounts' );
 
-		foreach ( $settings_groups as $group => $defaults ) {
+		foreach ( $groups as $group ) {
 			$option_name = 'kraft_ai_chat_' . $group;
 			if ( false === get_option( $option_name ) ) {
+				$defaults = Kraft_AI_Chat_Settings_REST::get_defaults_for_group( $group );
 				add_option( $option_name, $defaults );
 			}
 		}
