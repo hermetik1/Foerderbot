@@ -43,6 +43,8 @@ class KI_Kraft_Core {
 	 */
 	public function maybe_upgrade_schema() {
 		kraft_ai_chat_maybe_upgrade_schema();
+		// Also run general settings migration for existing installs
+		$this->maybe_migrate_general_defaults();
 	}
 	
 	/**
@@ -52,6 +54,7 @@ class KI_Kraft_Core {
 		$this->create_tables();
 		$this->setup_capabilities();
 		$this->register_default_settings();
+		$this->maybe_migrate_general_defaults();
 		flush_rewrite_rules();
 	}
 	
@@ -527,7 +530,16 @@ class KI_Kraft_Core {
 	 * Render floating bubble in footer if enabled.
 	 */
 	public function render_floating_bubble() {
-		$settings     = get_option( 'kraft_ai_chat_general', array() );
+		// Skip rendering in admin, feed, or REST contexts
+		if ( is_admin() || is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+			return;
+		}
+
+		$stored   = get_option( 'kraft_ai_chat_general', array() );
+		$defaults = Kraft_AI_Chat_Settings_REST::get_defaults_for_group( 'general' );
+		// Merge ensures missing keys from older installs are available
+		$settings = wp_parse_args( is_array( $stored ) ? $stored : array(), $defaults );
+
 		$enabled      = $settings['floating_enabled'] ?? false;
 		$site_enabled = $settings['site_enabled'] ?? false;
 
@@ -550,6 +562,29 @@ class KI_Kraft_Core {
 				$defaults = Kraft_AI_Chat_Settings_REST::get_defaults_for_group( $group );
 				add_option( $option_name, $defaults );
 			}
+		}
+	}
+
+	/**
+	 * Migrate general settings to include missing default keys.
+	 * 
+	 * This ensures that existing installations with older settings
+	 * get the new floating bubble keys without losing their current values.
+	 */
+	private function maybe_migrate_general_defaults() {
+		$option_name = 'kraft_ai_chat_general';
+		$stored      = get_option( $option_name, array() );
+		$defaults    = Kraft_AI_Chat_Settings_REST::get_defaults_for_group( 'general' );
+
+		if ( ! is_array( $stored ) ) {
+			$stored = array();
+		}
+
+		$merged = wp_parse_args( $stored, $defaults );
+
+		// Only update if there are new keys to add
+		if ( $merged !== $stored ) {
+			update_option( $option_name, $merged, false );
 		}
 	}
 
