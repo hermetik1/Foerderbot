@@ -105,6 +105,76 @@
 
 ---
 
+## 🎨 Branding & Farb‑System (Design‑Parität zum Original)
+
+**Ziel:** Das Erscheinungsbild soll dem bisherigen Plugin entsprechen und dennoch vollständig White‑Label‑fähig sein. Alle Farben/Abstände werden über **CSS‑Variablen** gesteuert und zentral aus den Admin‑Einstellungen injiziert.
+
+### Variablen (Frontend‑Widget)
+
+```css
+:root {
+  --kk-primary: #3b82f6;        /* Primärfarbe: Buttons, Links, Fokus */
+  --kk-primary-contrast: #ffffff;/* Textfarbe auf Primär */
+  --kk-surface: #ffffff;        /* Flächen (Karten, Sidebar) */
+  --kk-surface-2: #f8fafc;      /* Alternierende Flächen */
+  --kk-border: #e5e7eb;         /* Rahmen/Linien */
+  --kk-text: #111827;           /* Primärer Text */
+  --kk-text-muted: #6b7280;     /* Sekundärer Text */
+  --kk-focus: 0 0 0 3px rgba(59,130,246,.35); /* Fokus‑Ring */
+}
+:root[data-theme="dark"] {
+  --kk-primary: #60a5fa;
+  --kk-primary-contrast: #0b0f16;
+  --kk-surface: #0b0f16;
+  --kk-surface-2: #111827;
+  --kk-border: #1f2937;
+  --kk-text: #e5e7eb;
+  --kk-text-muted: #94a3b8;
+  --kk-focus: 0 0 0 3px rgba(96,165,250,.45);
+}
+```
+
+### Mapping der Variablen → Komponenten
+
+* **Rail/Sidebar:** Hintergrund `--kk-surface`, Umrandung `--kk-border`.
+* **Buttons (Primär):** Hintergrund `--kk-primary`, Text `--kk-primary-contrast`, Hover via `filter: brightness(0.95)`.
+* **Chat‑Bubbles:**
+
+  * User: Border `--kk-primary`, Text `--kk-text`.
+  * Bot: Hintergrund `--kk-surface-2`, Border `--kk-border`.
+* **Fokus‑Zustände:** `outline: var(--kk-focus)` auf `:focus-visible`.
+* **Links/Badges:** Farbe `--kk-primary`.
+
+### Admin → Frontend Übergabe
+
+* Admin speichert Branding (Primär/Sekundär, Logo, Footer etc.) in **Options‑API**.
+* Beim Enqueue des Widgets wird ein JS‑Objekt `KIKraftConfig.branding` via `wp_localize_script()` übergeben (z. B. `{ primary: "#0ea5e9", logoUrl: "…" }`).
+* Das Frontend setzt die Variablen **zur Laufzeit** auf der Widget‑Root (`.kk-widget`) oder global auf `:root` (je nach Embedding) und aktualisiert sie bei Theme‑Toggle.
+
+### Dark/Light Synchronisierung
+
+* Theme‑Toggle setzt `data-theme="dark"|"light"` auf Widget‑Root.
+* **Wichtig:** Die adminseitig gesetzte Primärfarbe wird **in beiden Themes** angewandt; ggf. leichte Anpassung der `--kk-primary` im Dark‑Mode (Tonwert +10–15 %).
+
+### Defaults & Kompatibilität mit dem Original
+
+* Standard‑Palette entspricht dem bisherigen Plugin (kräftiges Blau, hohe Lesbarkeit).
+* **Rail‑Breite** (~36 px), **Button‑Größe** (28 px) und **Mask‑Icons** bleiben erhalten.
+* Fokus‑Ringe sind sichtbar und farblich an `--kk-primary` ausgerichtet.
+
+### White‑Label & Überschreiben
+
+* Alle Styles vermeiden harte Farben; **nur Variablen** verwenden.
+* Custom‑Themes können per CSS die Variablen überschreiben (Site‑ oder Block‑Level).
+* Export/Import der Branding‑Konfiguration als JSON (Admin → White‑Label → Export/Import).
+
+### Tests (Design‑Parität)
+
+* Vitest/DOM: Prüft, dass `--kk-primary` auf Rail‑Buttons/Badges angewendet wird.
+* E2E/Playwright (optional): visuelle Regression (Light/Dark, Hover/Focus).
+
+---
+
 ## 🗂️ Projektstruktur (empfohlen)
 
 ```plaintext
@@ -149,6 +219,80 @@ ki-kraft/
 ├── scripts/ (build-plugin.js/verify-zip.js/sync-version.js)
 └── README.md
 ```
+
+---
+
+## 🧭 Rail & Sidebar – Mitglieder‑Bereich (UI‑Spezifikation)
+
+**Ziel:** Konsistentes, zugängliches Chat‑Widget mit schmaler **Rail** (eingeklappt) und **Sidebar** (ausgeklappt), identisch für FAQ & Mitglieder, mit Zusatzfunktionen für eingeloggte Nutzer.
+
+### Aufbau & Komponenten
+
+* **Rail (eingeklappt, Breite ~36 px):**
+
+  * **Avatar‑Button** (oben): rund (28–32 px), Quelle `KIKraftConfig.user.avatarUrl`; Fallback Initialen (1–2 Buchstaben). Klick öffnet Sidebar.
+  * **Action‑Leiste** (vertikal):
+
+    * **Chat** (öffnet Sidebar → Composer fokusiert)
+    * **Theme‑Toggle** (🌗, toggelt `data-theme` auf Widget‑Root)
+    * **Language‑Toggle** (DE/EN, persistiert per `user_meta` oder LocalStorage)
+    * **(optional) Settings** (nur mit Cap; öffnet Admin‑Seite in neuem Tab)
+  * **A11y:** Alle Buttons mit `aria-label` (aus i18n), `title`, sichtbarem `:focus-visible`‑Ring.
+
+* **Sidebar (ausgeklappt, Breite 360–420 px):**
+
+  * **Header:** Avatar + Name (displayName), Rollen‑Badge (z. B. `Member`, `Admin`).
+  * **Tabs:** *Chat*, *Verlauf*, *(optional)* *Dokumente* (nur mit Cap `kk_upload_member_docs`).
+  * **Chat‑Bereich:**
+
+    * **MessageList** (`role="log" aria-live="polite"`), virtuelle Liste bei langen Verläufen; Datumstrenner.
+    * **Composer** (Textarea mit Auto‑Resize; `Ctrl/Cmd+Enter` sendet), Anhänge‑Button optional (nur Mitglieder).
+    * **Quellen‑Badges** je Bot‑Antwort (Dokument‑Titel + Tooltip → Quelle).
+    * **Handoff‑Button** ("An Geschäftsstelle weiterleiten") bei niedriger Confidence.
+  * **Verlauf:** paginierte Session‑Liste (eigene Sessions); Suchfeld; „Neue Session“‑Button.
+  * **Dokumente (optional):** Drag&Drop‑Upload, Fortschritt, Liste indizierter Dateien.
+
+### Verhalten & States
+
+* Öffnen/Schließen: ESC schließt Sidebar; Fokus kehrt zum auslösenden Rail‑Button zurück (**Fokus‑Trap** aktiv im Off‑Canvas).
+* Theme‑Toggle wirkt sofort; CSS‑Variablen aus Branding bleiben erhalten (Dark‑Töne leicht angepasst).
+* Language‑Toggle wechselt Labels live; Fallback EN, falls Keys fehlen.
+* Initial‑State: Sidebar gemountet aber verborgen (Off‑Canvas), Rail immer sichtbar (z‑Index unter Admin‑Bars).
+
+### Klassen & Selektoren (Beispiele)
+
+* `.kk-rail`, `.kk-rail-btn`, `.kk-rail-avatar` (img/fallback‑span)
+* `.kk-sidebar`, `.kk-sidebar__header`, `.kk-tabs`, `.kk-chat`, `.kk-composer`, `.kk-bubbles`
+* Root: `.kk-widget[data-theme="light|dark"]`
+
+### REST‑Mapping (Mitglieder)
+
+* **Senden:** `POST /ki_kraft/v1/member/message` (Rate‑Limit; `Retry-After` UI‑Countdown)
+* **Verlauf:** `GET /ki_kraft/v1/member/sessions?limit=20&before=<ts>`
+* **Upload:** `POST /ki_kraft/v1/member/upload` (Cap‑gated)
+* **Handoff:** `POST /ki_kraft/v1/member/handoff`
+
+### A11y & Tastatursteuerung
+
+* `Tab` zyklisch innerhalb Sidebar (Fokus‑Trap); `Shift+Tab` respektiert Reihenfolge.
+* Shortcuts: `Ctrl/Cmd+Enter` senden; `Esc` schließen; `Alt+L` Language‑Toggle; `Alt+T` Theme‑Toggle.
+* Rolle/Aria: Header mit `aria-labelledby`, Tabs via `role="tablist"`/`role="tab"`/`aria-controls`.
+
+### Styling & Variablen (Kern)
+
+* Rail/Sidebar nutzen ausschließlich **Variablen** (`--kk-primary`, `--kk-surface`, `--kk-border`, `--kk-focus`).
+* Buttons: 28 px, runde Ecken (12–16 px), Hover via `filter: brightness(.95)`; aktive States leicht erhöhtes Kontrast‑Ratio.
+* Message Bubbles mit max‑Breite 90% und responsiven Abständen; Break‑Words; `prefers-reduced-motion` reduziert Transitions.
+
+### Tests (UI‑Verhalten)
+
+* **Vitest/DOM:**
+
+  * Rail‑Avatar Fallback → Initialen, wenn Bildfehler.
+  * Language‑Toggle ändert Label‑Set (DE↔EN) und persistiert.
+  * Theme‑Toggle setzt `data-theme` und aktualisiert Variablen.
+  * MessageList hat `role="log"` + `aria-live`.
+* **PHPUnit (REST):** 403 für Gast auf `/member/*`; eigene Sessions isoliert; Rate‑Limit sendet `Retry-After`.
 
 ---
 
