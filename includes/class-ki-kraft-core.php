@@ -170,49 +170,160 @@ class KI_Kraft_Core {
 	 * Add admin menu.
 	 */
 	public function add_admin_menu() {
+		// Main menu page
 		add_menu_page(
 			__( 'Kraft AI Chat', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			__( 'Kraft AI Chat', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			'manage_options',
 			'kraft-ai-chat',
-			array( $this, 'render_admin_page' ),
+			array( $this, 'render_dashboard_page' ),
 			'dashicons-format-chat',
-			30
+			65
 		);
 		
+		// Dashboard submenu (mirrors parent)
 		add_submenu_page(
 			'kraft-ai-chat',
 			__( 'Dashboard', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			__( 'Dashboard', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			'manage_options',
 			'kraft-ai-chat',
-			array( $this, 'render_admin_page' )
+			array( $this, 'render_dashboard_page' )
 		);
 		
+		// Settings submenu (separate page)
 		add_submenu_page(
 			'kraft-ai-chat',
 			__( 'Settings', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			__( 'Settings', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			'manage_options',
 			'kraft-ai-chat-settings',
-			array( $this, 'render_admin_page' )
+			array( $this, 'render_settings_page' )
 		);
 		
-		add_submenu_page(
-			'kraft-ai-chat',
-			__( 'Analytics', KRAFT_AI_CHAT_TEXTDOMAIN ),
-			__( 'Analytics', KRAFT_AI_CHAT_TEXTDOMAIN ),
-			'kk_view_analytics',
-			'kraft-ai-chat-analytics',
-			array( $this, 'render_admin_page' )
+		// Add help tabs for dashboard
+		add_action( 'load-toplevel_page_kraft-ai-chat', array( $this, 'add_dashboard_help_tabs' ) );
+		
+		// Add help tabs for settings
+		add_action( 'load-kraft-ai-chat_page_kraft-ai-chat-settings', array( $this, 'add_settings_help_tabs' ) );
+		
+		// Handle old page redirects
+		add_action( 'admin_init', array( $this, 'handle_legacy_redirects' ) );
+	}
+	
+	/**
+	 * Render dashboard page (SPA).
+	 */
+	public function render_dashboard_page() {
+		echo '<div id="ki-kraft-admin-root"></div>';
+	}
+	
+	/**
+	 * Render settings page (separate screen).
+	 */
+	public function render_settings_page() {
+		echo '<div id="ki-kraft-admin-root"></div>';
+	}
+	
+	/**
+	 * Add help tabs for dashboard.
+	 */
+	public function add_dashboard_help_tabs() {
+		$screen = get_current_screen();
+		if ( ! $screen ) {
+			return;
+		}
+		
+		$screen->add_help_tab(
+			array(
+				'id'      => 'kac-getting-started',
+				'title'   => __( 'Getting Started', KRAFT_AI_CHAT_TEXTDOMAIN ),
+				'content' => '<p>' . __( 'Welcome to Kraft AI Chat! Use the Dashboard tabs to manage your chatbot, knowledge base, analytics, privacy settings, and branding.', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</p>',
+			)
+		);
+		
+		$screen->add_help_tab(
+			array(
+				'id'      => 'kac-disclaimer',
+				'title'   => __( 'Disclaimer', KRAFT_AI_CHAT_TEXTDOMAIN ),
+				'content' => '<p>' . __( 'This plugin uses AI technology. Responses are generated automatically and should be reviewed for accuracy. The plugin does not guarantee correctness of AI-generated content.', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</p>',
+			)
+		);
+		
+		$screen->add_help_tab(
+			array(
+				'id'      => 'kac-faq',
+				'title'   => __( 'FAQ', KRAFT_AI_CHAT_TEXTDOMAIN ),
+				'content' => '<p><strong>' . __( 'How do I add knowledge?', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</strong><br>' . __( 'Go to the Knowledge Base tab to add and manage entries.', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</p>',
+			)
+		);
+		
+		$screen->set_help_sidebar(
+			'<p><strong>' . __( 'For more information:', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</strong></p>' .
+			'<p><a href="https://github.com/hermetik1/Foerderbot" target="_blank">' . __( 'Documentation', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</a></p>'
 		);
 	}
 	
 	/**
-	 * Render admin page.
+	 * Add help tabs for settings.
 	 */
-	public function render_admin_page() {
-		echo '<div id="ki-kraft-admin-root"></div>';
+	public function add_settings_help_tabs() {
+		$screen = get_current_screen();
+		if ( ! $screen ) {
+			return;
+		}
+		
+		$screen->add_help_tab(
+			array(
+				'id'      => 'kac-configuration',
+				'title'   => __( 'Configuration', KRAFT_AI_CHAT_TEXTDOMAIN ),
+				'content' => '<p>' . __( 'Configure general settings, API keys, rate limits, knowledge defaults, analytics, privacy, and branding options from this page.', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</p>',
+			)
+		);
+		
+		$screen->add_help_tab(
+			array(
+				'id'      => 'kac-privacy-notes',
+				'title'   => __( 'Privacy Notes', KRAFT_AI_CHAT_TEXTDOMAIN ),
+				'content' => '<p>' . __( 'Ensure compliance with GDPR and data protection laws. Review privacy settings carefully, especially data retention and external AI service usage.', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</p>',
+			)
+		);
+		
+		$screen->add_help_tab(
+			array(
+				'id'      => 'kac-support',
+				'title'   => __( 'Support', KRAFT_AI_CHAT_TEXTDOMAIN ),
+				'content' => '<p>' . __( 'Need help? Visit our support documentation or contact support through GitHub issues.', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</p>',
+			)
+		);
+		
+		$screen->set_help_sidebar(
+			'<p><strong>' . __( 'For more information:', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</strong></p>' .
+			'<p><a href="https://github.com/hermetik1/Foerderbot" target="_blank">' . __( 'Documentation', KRAFT_AI_CHAT_TEXTDOMAIN ) . '</a></p>'
+		);
+	}
+	
+	/**
+	 * Handle legacy page redirects.
+	 */
+	public function handle_legacy_redirects() {
+		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		
+		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+		
+		// Redirect old Analytics page to Dashboard
+		if ( 'kraft-ai-chat-analytics' === $page || 'kac-analytics' === $page ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=kraft-ai-chat' ) );
+			exit;
+		}
+		
+		// Redirect old Settings slugs to new Settings page
+		if ( 'kac-settings' === $page ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=kraft-ai-chat-settings' ) );
+			exit;
+		}
 	}
 	
 	/**
@@ -223,21 +334,34 @@ class KI_Kraft_Core {
 			return;
 		}
 		
+		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+		
+		// Check if assets exist before enqueuing
+		$admin_css_path = KRAFT_AI_CHAT_PLUGIN_DIR . 'assets/admin.css';
+		$admin_js_path  = KRAFT_AI_CHAT_PLUGIN_DIR . 'assets/admin.js';
+		
+		if ( ! file_exists( $admin_css_path ) || ! file_exists( $admin_js_path ) ) {
+			return;
+		}
+		
+		// Enqueue styles
 		wp_enqueue_style(
 			'kraft-ai-chat-admin',
 			KRAFT_AI_CHAT_PLUGIN_URL . 'assets/admin.css',
 			array(),
-			KRAFT_AI_CHAT_VERSION
+			filemtime( $admin_css_path )
 		);
 		
+		// Enqueue scripts
 		wp_enqueue_script(
 			'kraft-ai-chat-admin',
 			KRAFT_AI_CHAT_PLUGIN_URL . 'assets/admin.js',
 			array( 'wp-element', 'wp-i18n' ),
-			KRAFT_AI_CHAT_VERSION,
+			filemtime( $admin_js_path ),
 			true
 		);
 		
+		// Localize script with page context
 		wp_localize_script(
 			'kraft-ai-chat-admin',
 			'kraftAIChatAdmin',
@@ -245,6 +369,7 @@ class KI_Kraft_Core {
 				'apiUrl'   => rest_url( KRAFT_AI_CHAT_REST_NS ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'branding' => KI_Kraft_Branding::get_config(),
+				'page'     => $page,
 			)
 		);
 		
