@@ -1,0 +1,154 @@
+/* KI Kraft Widget - Component Styles */
+
+.kk-message {
+	margin-bottom: 12px;
+	display: flex;
+	gap: 8px;
+}
+
+.kk-message.user {
+	justify-content: flex-end;
+}
+
+.kk-bubble {
+	max-width: 90%;
+	padding: 10px 14px;
+	border-radius: 12px;
+	word-wrap: break-word;
+	line-height: 1.5;
+}
+
+.kk-bubble.user {
+	background: transparent;
+	border: 1px solid var(--kk-primary);
+	color: var(--kk-text);
+	border-radius: 12px 12px 0 12px;
+}
+
+.kk-bubble.bot {
+	background: var(--kk-surface-2);
+	border: 1px solid var(--kk-border);
+	color: var(--kk-text);
+	border-radius: 12px 12px 12px 0;
+}
+
+.kk-bubble.assistant {
+	background: var(--kk-surface-2);
+	border: 1px solid var(--kk-border);
+	color: var(--kk-text);
+	border-radius: 12px 12px 12px 0;
+}
+
+.kk-sources {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px solid var(--kk-border);
+}
+
+.kk-composer textarea {
+	width: 100%;
+	min-height: 60px;
+	padding: 10px;
+	border: 1px solid var(--kk-border);
+	border-radius: 8px;
+	resize: vertical;
+	font-family: inherit;
+	font-size: inherit;
+	color: var(--kk-text);
+	background: var(--kk-surface);
+}
+
+.kk-composer textarea:focus-visible {
+	outline: var(--kk-focus);
+}
+
+.kk-button-primary {
+	background: var(--kk-primary);
+	color: var(--kk-primary-contrast);
+	border: none;
+	padding: 8px 16px;
+	border-radius: 8px;
+	cursor: pointer;
+	font-weight: 500;
+	transition: filter 0.2s;
+	font-size: 14px;
+}
+
+.kk-button-primary:hover {
+	filter: brightness(0.95);
+}
+
+.kk-button-primary:focus-visible {
+	outline: var(--kk-focus);
+}
+
+.kk-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	background: var(--kk-surface-2);
+	border: 1px solid var(--kk-border);
+	border-radius: 12px;
+	font-size: 11px;
+	color: var(--kk-primary);
+	cursor: help;
+}
+
+.kk-typing-indicator {
+	display: flex;
+	justify-content: flex-start;
+}
+
+.kk-typing-dots {
+	display: flex;
+	gap: 4px;
+	padding: 4px 0;
+}
+
+.kk-typing-dots span {
+	width: 6px;
+	height: 6px;
+	background: var(--kk-text-muted);
+	border-radius: 50%;
+	animation: typing 1.4s infinite;
+}
+
+.kk-typing-dots span:nth-child(1) {
+	animation-delay: 0s;
+}
+
+.kk-typing-dots span:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+.kk-typing-dots span:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+@keyframes typing {
+	0%, 60%, 100% {
+		transform: translateY(0);
+		opacity: 0.4;
+	}
+	30% {
+		transform: translateY(-6px);
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	@keyframes typing {
+		0%, 100% {
+			opacity: 0.4;
+		}
+		50% {
+			opacity: 1;
+		}
+	}
+	
+	.kk-typing-dots span {
+		transform: none;
+	}
+}
