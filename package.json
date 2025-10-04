@@ -4,15 +4,17 @@
   "description": "Dual Chatbot Plugin for WordPress",
   "main": "index.js",
   "scripts": {
-    "build": "npm run build:admin && npm run build:frontend",
-    "build:admin": "echo 'Building admin...' && echo 'TODO: Add build command'",
-    "build:frontend": "echo 'Building frontend...' && echo 'TODO: Add build command'",
-    "build:plugin": "node scripts/build-plugin.js",
+    "build": "webpack --mode production && npm run build:css",
+    "build:css": "cat admin/app/styles/*.css > assets/admin.css && cat frontend/styles/*.css > assets/widget.css",
+    "build:admin": "webpack --mode production --config webpack.config.js",
+    "build:frontend": "webpack --mode production --config webpack.config.js",
+    "build:plugin": "npm run build && node scripts/build-plugin.js",
     "verify": "node scripts/verify-zip.js",
     "sync-version": "node scripts/sync-version.js",
     "test": "vitest",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "watch": "webpack --mode development --watch"
   },
   "keywords": [
     "wordpress",
@@ -26,11 +28,17 @@
   "devDependencies": {
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "@types/wordpress__element": "^2.0.0",
     "archiver": "^6.0.0",
+    "css-loader": "^6.0.0",
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
+    "style-loader": "^3.0.0",
+    "ts-loader": "^9.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "^1.0.0",
+    "webpack": "^5.0.0",
+    "webpack-cli": "^5.0.0"
   },
   "dependencies": {
     "react": "^18.2.0",
