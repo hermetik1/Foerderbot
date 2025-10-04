@@ -388,3 +388,33 @@ ki-kraft/
 * Optionaler KI_Kraft Cloud Index Connector.
 * Admin‑Onboarding Wizard (erste Schritte + Live‑Checks).
 * Tenant‑übergreifende Wissens‑Federation (Multisite‑Cluster).
+
+---
+
+## ➕ Ergänzungen (Rail‑Icons & Admin‑Menü – passend zur aktuellen Umsetzung)
+
+### Rail‑Icons (Mask‑Icons, wie im aktuellen Plugin)
+
+* **Chat:** `message-square` (Mask‑Icon, 28 px)
+* **Theme:** `moon` (Dark) / `sun` (Light)
+* **Language:** `globe`
+* **Settings (optional, Cap‑gated):** `settings`
+* **Farbe:** `currentColor` gesteuert über `--kk-primary`; Fokus‑Ring via `--kk-focus`.
+* **Implementierung:** CSS‑Mask (`mask-image: url(<svg>)`) für scharfe Icons auf allen Hintergründen.
+
+### Admin‑Menüstruktur (Top-Level Menü)
+
+* **KI Kraft** (Hauptmenü)
+
+  * **Dashboard** (Übersicht, Status, Quick‑Links)
+  * **Einstellungen** (Allgemein, API‑Keys, Caching)
+  * **Datenschutz & DSGVO** (Opt‑in, Retention, Exporter/Eraser‑Status)
+  * **White‑Label** (Logo, Farben, Footer‑Hinweise, JSON Export/Import)
+  * **Analytics** (Charts, Unanswered‑Feed, CSV/JSON‑Export)
+
+### Responsive Verhalten (Frontend)
+
+* **Mobil (< 640 px):** Sidebar nutzt volle Breite; Rail bleibt fix am Rand; größere Touch‑Targets (≥ 44 px).
+* **Tablet (≥ 640 px):** Sidebar 90 % der Breite; Rail unverändert.
+* **Desktop (≥ 1024 px):** Sidebar 360–420 px; Rail ~36 px.
+* **Performance:** Lazy‑Load der Sidebar‑Komponenten beim ersten Öffnen; Code‑Splitting für Admin/Frontend getrennt.
