@@ -1,5 +1,431 @@
 /* KI Kraft Widget - Layout Styles */
 
+/* Fullscreen Layout for Member Chat */
+.kk-fullscreen {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	grid-template-columns: 56px 1fr;
+	background: var(--kk-bg, var(--kk-surface));
+	color: var(--kk-fg, var(--kk-text));
+	z-index: 9999;
+}
+
+/* Rail for Fullscreen Mode (left column) */
+.kk-fullscreen .kk-rail {
+	position: static;
+	width: 56px;
+	height: 100%;
+	transform: none;
+	border-radius: 0;
+	border: none;
+	border-right: 1px solid var(--kk-border);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 6px;
+	background: var(--kk-surface);
+}
+
+.kk-fullscreen .kk-rail-btn {
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	display: grid;
+	place-items: center;
+	border: none;
+	background: transparent;
+	color: var(--kk-text);
+	cursor: pointer;
+	font-size: 18px;
+	transition: background 0.2s;
+}
+
+.kk-fullscreen .kk-rail-btn:hover {
+	background: var(--kk-surface-2);
+}
+
+.kk-fullscreen .kk-rail-btn:focus-visible {
+	outline: var(--kk-focus);
+}
+
+.kk-fullscreen .kk-rail-avatar {
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	overflow: hidden;
+	cursor: pointer;
+	margin-bottom: 8px;
+}
+
+.kk-fullscreen .kk-rail-new {
+	background: var(--kk-primary);
+	color: var(--kk-primary-contrast);
+	font-size: 24px;
+	font-weight: 300;
+}
+
+.kk-fullscreen .kk-rail-lang {
+	margin-top: auto;
+	font-size: 11px;
+	color: var(--kk-text-muted);
+	font-weight: 600;
+	padding: 4px 0;
+}
+
+/* Sidebar in Fullscreen Mode */
+.kk-fullscreen .kk-sidebar {
+	position: static;
+	width: 100%;
+	height: 100%;
+	transform: none;
+	border: none;
+	box-shadow: none;
+	display: flex;
+	flex-direction: column;
+}
+
+.kk-fullscreen .kk-sidebar:not(.open) {
+	display: none;
+}
+
+.kk-fullscreen .kk-sidebar__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 56px;
+	padding: 0 16px;
+	border-bottom: 1px solid var(--kk-border);
+	background: var(--kk-surface);
+}
+
+.kk-fullscreen .kk-header-left {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.kk-fullscreen .kk-brand {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.kk-fullscreen .kk-brand-logo {
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+}
+
+.kk-fullscreen .kk-brand-title {
+	font-weight: 600;
+	font-size: 16px;
+}
+
+.kk-fullscreen .kk-conv-title {
+	font-size: 14px;
+	color: var(--kk-text-muted);
+}
+
+.kk-fullscreen .kk-body {
+	display: grid;
+	grid-template-columns: 280px 1fr;
+	height: calc(100% - 56px - 82px);
+	overflow: hidden;
+}
+
+/* History Navigation */
+.kk-history {
+	border-right: 1px solid var(--kk-border);
+	padding: 12px;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	background: var(--kk-surface);
+}
+
+.kk-history-search {
+	position: relative;
+}
+
+.kk-history-search-input {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid var(--kk-border);
+	border-radius: 8px;
+	font-size: 13px;
+	background: var(--kk-surface-2);
+	color: var(--kk-text);
+}
+
+.kk-history-search-input:focus {
+	outline: var(--kk-focus);
+}
+
+.kk-new-chat-btn {
+	width: 100%;
+	padding: 10px;
+	background: #22c55e;
+	color: white;
+	border: none;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	font-size: 14px;
+	transition: filter 0.2s;
+}
+
+.kk-new-chat-btn:hover {
+	filter: brightness(1.1);
+}
+
+.kk-history-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	flex: 1;
+}
+
+.kk-history-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background 0.2s;
+	border: 1px solid transparent;
+}
+
+.kk-history-item:hover {
+	background: var(--kk-surface-2);
+}
+
+.kk-history-item.active {
+	background: var(--kk-surface-2);
+	border-color: var(--kk-border);
+}
+
+.kk-history-title {
+	flex: 1;
+	font-size: 14px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.kk-history-actions {
+	display: flex;
+	gap: 4px;
+	opacity: 0;
+	transition: opacity 0.2s;
+}
+
+.kk-history-item:hover .kk-history-actions {
+	opacity: 1;
+}
+
+.kk-history-rename,
+.kk-history-delete {
+	width: 28px;
+	height: 28px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+}
+
+.kk-history-rename:hover,
+.kk-history-delete:hover {
+	background: var(--kk-border);
+}
+
+/* Chat Area in Fullscreen */
+.kk-fullscreen .kk-chat {
+	position: relative;
+	overflow: auto;
+	padding: 16px 24px;
+	background: var(--kk-surface);
+}
+
+.kk-fullscreen .kk-messages {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+.kk-fullscreen .kk-message {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.kk-fullscreen .kk-message.user {
+	align-items: flex-end;
+}
+
+.kk-fullscreen .kk-message.bot {
+	align-items: flex-start;
+}
+
+.kk-fullscreen .kk-message-content {
+	max-width: 68ch;
+	padding: 12px 14px;
+	border-radius: 14px;
+	line-height: 1.6;
+}
+
+.kk-fullscreen .kk-message.user .kk-message-content {
+	background: var(--kk-primary);
+	color: var(--kk-primary-contrast);
+	border-radius: 14px 14px 0 14px;
+}
+
+.kk-fullscreen .kk-message.bot .kk-message-content {
+	background: var(--kk-surface-2);
+	color: var(--kk-text);
+	border-radius: 14px 14px 14px 0;
+	border: 1px solid var(--kk-border);
+}
+
+.kk-message-actions {
+	display: flex;
+	gap: 10px;
+	margin-top: 6px;
+	opacity: 0.85;
+}
+
+.kk-msg-copy,
+.kk-msg-retry,
+.kk-msg-like,
+.kk-msg-dislike,
+.kk-msg-delete {
+	width: 32px;
+	height: 32px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	transition: background 0.2s;
+}
+
+.kk-msg-copy:hover,
+.kk-msg-retry:hover,
+.kk-msg-like:hover,
+.kk-msg-dislike:hover,
+.kk-msg-delete:hover {
+	background: var(--kk-surface-2);
+}
+
+/* Composer in Fullscreen */
+.kk-fullscreen .kk-composer {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	padding: 14px 16px;
+	border-top: 1px solid var(--kk-border);
+	background: var(--kk-surface);
+	min-height: 82px;
+}
+
+.kk-fullscreen .kk-mic-btn {
+	width: 44px;
+	height: 44px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	border-radius: 50%;
+	font-size: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.2s;
+}
+
+.kk-fullscreen .kk-mic-btn:hover {
+	background: var(--kk-surface-2);
+}
+
+.kk-fullscreen .kk-input {
+	flex: 1;
+	min-height: 44px;
+	max-height: 120px;
+	border-radius: 24px;
+	padding: 10px 16px;
+	border: 1px solid var(--kk-border);
+	background: var(--kk-surface-2);
+	color: var(--kk-text);
+	font-family: inherit;
+	font-size: 14px;
+	resize: none;
+}
+
+.kk-fullscreen .kk-input:focus {
+	outline: var(--kk-focus);
+}
+
+.kk-fullscreen .kk-send-btn {
+	width: 44px;
+	height: 44px;
+	border: none;
+	background: var(--kk-primary);
+	color: var(--kk-primary-contrast);
+	cursor: pointer;
+	border-radius: 50%;
+	font-size: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: filter 0.2s;
+}
+
+.kk-fullscreen .kk-send-btn:hover {
+	filter: brightness(1.1);
+}
+
+.kk-fullscreen .kk-send-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Legal Footer */
+.kk-legal {
+	position: absolute;
+	bottom: 8px;
+	right: 16px;
+	font-size: 12px;
+	opacity: 0.8;
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.kk-legal-text {
+	color: var(--kk-text-muted);
+}
+
+.kk-legal-link {
+	color: var(--kk-primary);
+	text-decoration: none;
+}
+
+.kk-legal-link:hover {
+	text-decoration: underline;
+}
+
+/* Floating Mode Rail (legacy) */
 .kk-rail {
 	position: fixed;
 	right: 0;
@@ -168,6 +594,35 @@
 	align-self: flex-end;
 	padding: 10px 16px;
 	white-space: nowrap;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+	.kk-fullscreen {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto 1fr;
+	}
+	
+	.kk-fullscreen .kk-rail {
+		width: 100%;
+		height: auto;
+		flex-direction: row;
+		border-right: none;
+		border-bottom: 1px solid var(--kk-border);
+	}
+	
+	.kk-fullscreen .kk-body {
+		grid-template-columns: 1fr;
+		height: calc(100% - 56px - 82px - 56px);
+	}
+	
+	.kk-history {
+		display: none;
+	}
+	
+	.kk-fullscreen .kk-sidebar:not(.open) {
+		display: flex;
+	}
 }
 
 @media (max-width: 640px) {
