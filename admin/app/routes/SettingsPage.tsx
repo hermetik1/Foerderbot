@@ -14,6 +14,10 @@ declare const kraftAIChatAdmin: {
 	nonce: string;
 	branding: any;
 	page?: string;
+	capabilities?: {
+		viewAnalytics?: boolean;
+		manageOptions?: boolean;
+	};
 };
 
 /**
@@ -22,6 +26,9 @@ declare const kraftAIChatAdmin: {
 const SettingsPage: React.FC = () => {
 	const [activeSection, setActiveSection] = useState<string>('general');
 	const [searchTerm, setSearchTerm] = useState<string>('');
+	
+	// Check if user has analytics capability
+	const canViewAnalytics = kraftAIChatAdmin.capabilities?.viewAnalytics ?? false;
 
 	const sections = [
 		{ id: 'general', label: 'General Settings', icon: '⚙️' },
@@ -30,8 +37,11 @@ const SettingsPage: React.FC = () => {
 		{ id: 'accounts', label: 'Accounts', icon: '👤' },
 		{ id: 'privacy', label: 'Privacy', icon: '🔒' },
 		{ id: 'knowledge', label: 'Knowledge Defaults', icon: '📚' },
-		{ id: 'analytics-settings', label: 'Analytics Settings', icon: '📊' },
-		{ id: 'analytics', label: 'Analytics Dashboard', icon: '📈' },
+		// Only show analytics tabs if user has the capability
+		...(canViewAnalytics ? [
+			{ id: 'analytics-settings', label: 'Analytics Settings', icon: '📊' },
+			{ id: 'analytics', label: 'Analytics Dashboard', icon: '📈' },
+		] : []),
 		{ id: 'developer', label: 'Developer / Tools', icon: '🛠️' },
 	];
 

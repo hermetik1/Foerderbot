@@ -23,6 +23,12 @@ const IntegrationsTab: React.FC = () => {
 		rag_service: '',
 		rag_endpoint: '',
 	});
+	const [originalSettings, setOriginalSettings] = useState<IntegrationsSettings>({
+		openai_api_key: '',
+		whisper_api_key: '',
+		rag_service: '',
+		rag_endpoint: '',
+	});
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [message, setMessage] = useState('');
@@ -38,6 +44,7 @@ const IntegrationsTab: React.FC = () => {
 		try {
 			const data = await settingsAPI.get('integrations');
 			setSettings(data);
+			setOriginalSettings(data);
 		} catch (error) {
 			console.error('Failed to load settings:', error);
 			setMessage('Failed to load settings.');
@@ -53,9 +60,26 @@ const IntegrationsTab: React.FC = () => {
 		setErrors({});
 
 		try {
-			const response = await settingsAPI.update('integrations', settings);
+			// Only send changed fields, especially for secrets
+			const updatedFields: Partial<IntegrationsSettings> = {};
+			
+			// Only include secrets if they were actually changed (not just masked value)
+			if (settings.openai_api_key !== originalSettings.openai_api_key && settings.openai_api_key !== maskKey(originalSettings.openai_api_key)) {
+				updatedFields.openai_api_key = settings.openai_api_key;
+			}
+			if (settings.whisper_api_key !== originalSettings.whisper_api_key && settings.whisper_api_key !== maskKey(originalSettings.whisper_api_key)) {
+				updatedFields.whisper_api_key = settings.whisper_api_key;
+			}
+			
+			// Always include non-secret fields
+			updatedFields.rag_service = settings.rag_service;
+			updatedFields.rag_endpoint = settings.rag_endpoint;
+
+			const response = await settingsAPI.update('integrations', updatedFields);
 			if (response.success) {
 				setMessage('Integration settings saved successfully!');
+				// Reload to get masked values from server
+				await loadSettings();
 			}
 		} catch (error: any) {
 			const apiError = error as APIError;
@@ -108,12 +132,10 @@ const IntegrationsTab: React.FC = () => {
 							<input
 								type={showOpenAIKey ? 'text' : 'password'}
 								id="openai_api_key"
-								value={showOpenAIKey ? settings.openai_api_key : maskKey(settings.openai_api_key)}
-								onChange={(e) => showOpenAIKey && setSettings({ ...settings, openai_api_key: e.target.value })}
+								value={settings.openai_api_key}
+								onChange={(e) => setSettings({ ...settings, openai_api_key: e.target.value })}
 								placeholder="sk-..."
 								style={{ flex: 1 }}
-								onFocus={() => setShowOpenAIKey(true)}
-								onBlur={() => setShowOpenAIKey(false)}
 							/>
 							<button
 								type="button"
@@ -123,7 +145,7 @@ const IntegrationsTab: React.FC = () => {
 								{showOpenAIKey ? '👁️ Hide' : '👁️ Show'}
 							</button>
 						</div>
-						<p className="description">Your OpenAI API key for GPT models</p>
+						<p className="description">Your OpenAI API key for GPT models (leave unchanged to keep existing)</p>
 						{errors.openai_api_key && <p className="error-text">{errors.openai_api_key}</p>}
 					</div>
 
@@ -133,12 +155,10 @@ const IntegrationsTab: React.FC = () => {
 							<input
 								type={showWhisperKey ? 'text' : 'password'}
 								id="whisper_api_key"
-								value={showWhisperKey ? settings.whisper_api_key : maskKey(settings.whisper_api_key)}
-								onChange={(e) => showWhisperKey && setSettings({ ...settings, whisper_api_key: e.target.value })}
+								value={settings.whisper_api_key}
+								onChange={(e) => setSettings({ ...settings, whisper_api_key: e.target.value })}
 								placeholder="sk-..."
 								style={{ flex: 1 }}
-								onFocus={() => setShowWhisperKey(true)}
-								onBlur={() => setShowWhisperKey(false)}
 							/>
 							<button
 								type="button"
@@ -148,7 +168,7 @@ const IntegrationsTab: React.FC = () => {
 								{showWhisperKey ? '👁️ Hide' : '👁️ Show'}
 							</button>
 						</div>
-						<p className="description">Your Whisper API key for speech-to-text</p>
+						<p className="description">Your Whisper API key for speech-to-text (leave unchanged to keep existing)</p>
 						{errors.whisper_api_key && <p className="error-text">{errors.whisper_api_key}</p>}
 					</div>
 				</div>

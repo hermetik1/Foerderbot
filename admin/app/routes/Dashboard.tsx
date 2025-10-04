@@ -6,6 +6,10 @@ declare const kraftAIChatAdmin: {
 	nonce: string;
 	branding: any;
 	page?: string;
+	capabilities?: {
+		viewAnalytics?: boolean;
+		manageOptions?: boolean;
+	};
 };
 
 interface StatusData {
@@ -144,18 +148,20 @@ const Dashboard: React.FC = () => {
 					</div>
 				</div>
 
-				{/* Usage/Statistics Section */}
-				<div className="dashboard-card stats-card">
-					<h2>📈 Nutzung / Statistiken</h2>
-					<div className="card-content">
-						<p className="empty-state">
-							Statistiken werden angezeigt, wenn lokale Analytics aktiv sind.
-						</p>
-						<p className="hint">
-							Aktivieren Sie lokale Analytics in den <a href="?page=kraft-ai-chat-settings&section=analytics-settings">Analytics-Einstellungen</a>.
-						</p>
+				{/* Usage/Statistics Section - Only show if user has analytics capability */}
+				{kraftAIChatAdmin.capabilities?.viewAnalytics && (
+					<div className="dashboard-card stats-card">
+						<h2>📈 Nutzung / Statistiken</h2>
+						<div className="card-content">
+							<p className="empty-state">
+								Statistiken werden angezeigt, wenn lokale Analytics aktiv sind.
+							</p>
+							<p className="hint">
+								Aktivieren Sie lokale Analytics in den <a href="?page=kraft-ai-chat-settings#analytics-settings">Analytics-Einstellungen</a>.
+							</p>
+						</div>
 					</div>
-				</div>
+				)}
 
 				{/* Knowledge Base Section */}
 				<div className="dashboard-card knowledge-card">

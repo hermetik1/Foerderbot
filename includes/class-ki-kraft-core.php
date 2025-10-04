@@ -326,9 +326,15 @@ class KI_Kraft_Core {
 		
 		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 		
-		// Redirect old Analytics page to Dashboard
+		// Redirect old Analytics page to Settings with Analytics tab
 		if ( 'kraft-ai-chat-analytics' === $page || 'kac-analytics' === $page ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=kraft-ai-chat' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=kraft-ai-chat-settings#analytics-settings' ) );
+			exit;
+		}
+		
+		// Redirect old Seed Data page to Settings with Developer tab
+		if ( 'kraft-ai-chat-seed' === $page ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=kraft-ai-chat-settings#developer' ) );
 			exit;
 		}
 		
@@ -379,10 +385,14 @@ class KI_Kraft_Core {
 			'kraft-ai-chat-admin',
 			'kraftAIChatAdmin',
 			array(
-				'apiUrl'   => rest_url( KRAFT_AI_CHAT_REST_NS ),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'branding' => KI_Kraft_Branding::get_config(),
-				'page'     => $page,
+				'apiUrl'       => rest_url( KRAFT_AI_CHAT_REST_NS ),
+				'nonce'        => wp_create_nonce( 'wp_rest' ),
+				'branding'     => KI_Kraft_Branding::get_config(),
+				'page'         => $page,
+				'capabilities' => array(
+					'viewAnalytics' => current_user_can( 'kk_view_analytics' ),
+					'manageOptions' => current_user_can( 'manage_options' ),
+				),
 			)
 		);
 		
