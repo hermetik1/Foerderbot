@@ -4,12 +4,20 @@ import PrivacyTab from './Settings/PrivacyTab';
 import WhiteLabelTab from './Settings/WhiteLabelTab';
 import KnowledgeTab from './Settings/KnowledgeTab';
 import AnalyticsTab from './Settings/AnalyticsTab';
+import IntegrationsTab from './Settings/IntegrationsTab';
+import AccountsTab from './Settings/AccountsTab';
+import AnalyticsSettingsTab from './Settings/AnalyticsSettingsTab';
+import DeveloperToolsTab from './Settings/DeveloperToolsTab';
 
 declare const kraftAIChatAdmin: {
 	apiUrl: string;
 	nonce: string;
 	branding: any;
 	page?: string;
+	capabilities?: {
+		viewAnalytics?: boolean;
+		manageOptions?: boolean;
+	};
 };
 
 /**
@@ -18,27 +26,45 @@ declare const kraftAIChatAdmin: {
 const SettingsPage: React.FC = () => {
 	const [activeSection, setActiveSection] = useState<string>('general');
 	const [searchTerm, setSearchTerm] = useState<string>('');
+	
+	// Check if user has analytics capability
+	const canViewAnalytics = kraftAIChatAdmin.capabilities?.viewAnalytics ?? false;
 
 	const sections = [
 		{ id: 'general', label: 'General Settings', icon: '⚙️' },
-		{ id: 'privacy', label: 'Privacy', icon: '🔒' },
 		{ id: 'branding', label: 'Branding', icon: '🎨' },
+		{ id: 'integrations', label: 'Integrations', icon: '🔌' },
+		{ id: 'accounts', label: 'Accounts', icon: '👤' },
+		{ id: 'privacy', label: 'Privacy', icon: '🔒' },
 		{ id: 'knowledge', label: 'Knowledge Defaults', icon: '📚' },
-		{ id: 'analytics', label: 'Analytics', icon: '📊' },
+		// Only show analytics tabs if user has the capability
+		...(canViewAnalytics ? [
+			{ id: 'analytics-settings', label: 'Analytics Settings', icon: '📊' },
+			{ id: 'analytics', label: 'Analytics Dashboard', icon: '📈' },
+		] : []),
+		{ id: 'developer', label: 'Developer / Tools', icon: '🛠️' },
 	];
 
 	const renderContent = () => {
 		switch (activeSection) {
 			case 'general':
 				return <GeneralTab />;
-			case 'privacy':
-				return <PrivacyTab />;
 			case 'branding':
 				return <WhiteLabelTab />;
+			case 'integrations':
+				return <IntegrationsTab />;
+			case 'accounts':
+				return <AccountsTab />;
+			case 'privacy':
+				return <PrivacyTab />;
 			case 'knowledge':
 				return <KnowledgeTab />;
+			case 'analytics-settings':
+				return <AnalyticsSettingsTab />;
 			case 'analytics':
 				return <AnalyticsTab />;
+			case 'developer':
+				return <DeveloperToolsTab />;
 			default:
 				return <div>Unknown section</div>;
 		}

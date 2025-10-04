@@ -19,10 +19,140 @@
 }
 
 .ki-kraft-dashboard {
-	padding: 0;
+	padding: 20px;
 	max-width: 100%;
 	margin: 0;
 	background: #f0f0f1;
+}
+
+.dashboard-header {
+	margin-bottom: 24px;
+}
+
+.dashboard-header h1 {
+	font-size: 28px;
+	margin: 0 0 8px 0;
+	color: var(--kk-text);
+}
+
+.dashboard-header p {
+	margin: 0;
+	color: var(--kk-text-muted);
+}
+
+.dashboard-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: 20px;
+	max-width: 1400px;
+}
+
+.dashboard-card {
+	background: var(--kk-surface);
+	border: 1px solid var(--kk-border);
+	border-radius: 8px;
+	padding: 20px;
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+	transition: box-shadow 0.2s;
+}
+
+.dashboard-card:hover {
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card h2 {
+	margin: 0 0 16px 0;
+	font-size: 18px;
+	color: var(--kk-text);
+	font-weight: 600;
+}
+
+.card-content {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.status-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 0;
+	border-bottom: 1px solid #f3f4f6;
+}
+
+.status-item:last-child {
+	border-bottom: none;
+}
+
+.status-item .label {
+	color: var(--kk-text-muted);
+	font-size: 14px;
+}
+
+.status-item .value {
+	color: var(--kk-text);
+	font-weight: 500;
+	font-size: 14px;
+}
+
+.status-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.status-badge.status-active {
+	background: #d1fae5;
+	color: #065f46;
+}
+
+.status-badge.status-inactive {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.action-button {
+	display: inline-block;
+	padding: 10px 16px;
+	background: var(--kk-primary);
+	color: white;
+	text-decoration: none;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 14px;
+	text-align: center;
+	transition: background 0.2s;
+}
+
+.action-button:hover {
+	background: #2563eb;
+	color: white;
+}
+
+.action-button.small {
+	padding: 6px 12px;
+	font-size: 13px;
+}
+
+.empty-state {
+	color: var(--kk-text-muted);
+	font-style: italic;
+	margin: 0;
+}
+
+.hint {
+	font-size: 13px;
+	color: var(--kk-text-muted);
+	margin: 8px 0 0 0;
+}
+
+.hint a {
+	color: var(--kk-primary);
 }
 
 .dashboard-nav {

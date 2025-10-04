@@ -8,6 +8,9 @@ declare const kraftAIChatAdmin: {
 
 interface GeneralSettings {
 	site_enabled: boolean;
+	faq_enabled: boolean;
+	advisor_enabled: boolean;
+	max_message_length: number;
 	default_lang: string;
 	cache_enabled: boolean;
 	cache_ttl: number;
@@ -22,6 +25,9 @@ interface GeneralSettings {
 const GeneralTab: React.FC = () => {
 	const [settings, setSettings] = useState<GeneralSettings>({
 		site_enabled: true,
+		faq_enabled: false,
+		advisor_enabled: false,
+		max_message_length: 1000,
 		default_lang: 'de',
 		cache_enabled: true,
 		cache_ttl: 86400,
@@ -112,6 +118,46 @@ const GeneralTab: React.FC = () => {
 							{' '}Enable Plugin Site-Wide
 						</label>
 						<p className="description">Activate the chatbot functionality across the entire site</p>
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="faq_enabled">
+							<input
+								type="checkbox"
+								id="faq_enabled"
+								checked={settings.faq_enabled}
+								onChange={(e) => setSettings({ ...settings, faq_enabled: e.target.checked })}
+							/>
+							{' '}Enable FAQ Bot
+						</label>
+						<p className="description">Activate the FAQ chatbot for public knowledge base questions</p>
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="advisor_enabled">
+							<input
+								type="checkbox"
+								id="advisor_enabled"
+								checked={settings.advisor_enabled}
+								onChange={(e) => setSettings({ ...settings, advisor_enabled: e.target.checked })}
+							/>
+							{' '}Enable Advisor Bot
+						</label>
+						<p className="description">Activate the advisor bot for member-specific support</p>
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="max_message_length">Max Message Length</label>
+						<input
+							type="number"
+							id="max_message_length"
+							value={settings.max_message_length}
+							onChange={(e) => setSettings({ ...settings, max_message_length: Number(e.target.value) })}
+							min="50"
+							max="4000"
+						/>
+						<p className="description">Maximum character length for user messages (50-4000)</p>
+						{errors.max_message_length && <p className="error-text">{errors.max_message_length}</p>}
 					</div>
 
 					<div className="form-group">

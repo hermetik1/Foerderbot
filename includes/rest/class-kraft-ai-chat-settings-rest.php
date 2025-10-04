@@ -18,7 +18,7 @@ class Kraft_AI_Chat_Settings_REST {
 	 * Register settings REST API routes.
 	 */
 	public static function register_routes() {
-		$groups = array( 'general', 'privacy', 'branding', 'knowledge', 'analytics' );
+		$groups = array( 'general', 'privacy', 'branding', 'knowledge', 'analytics', 'integrations', 'accounts' );
 
 		foreach ( $groups as $group ) {
 			register_rest_route(
@@ -118,12 +118,15 @@ class Kraft_AI_Chat_Settings_REST {
 	}
 
 	/**
-	 * Get default values for a settings group.
+	 * Get default values for a settings group (public for use by Core).
 	 */
-	private static function get_defaults_for_group( $group ) {
+	public static function get_defaults_for_group( $group ) {
 		$defaults = array(
 			'general'   => array(
 				'site_enabled'       => true,
+				'faq_enabled'        => false,
+				'advisor_enabled'    => false,
+				'max_message_length' => 1000,
 				'default_lang'       => 'de',
 				'cache_enabled'      => true,
 				'cache_ttl'          => 86400,
@@ -141,27 +144,44 @@ class Kraft_AI_Chat_Settings_REST {
 				'collect_local_analytics' => false,
 			),
 			'branding'  => array(
-				'logo_url'        => '',
-				'product_name'    => 'KI Kraft',
-				'primary_color'   => '#3b82f6',
-				'secondary_color' => '#60a5fa',
-				'favicon_url'     => '',
-				'footer_text'     => '',
-				'privacy_url'     => '',
-				'imprint_url'     => '',
-				'powered_by'      => true,
+				'logo_url'           => '',
+				'product_name'       => 'KI Kraft',
+				'primary_color'      => '#3b82f6',
+				'secondary_color'    => '#60a5fa',
+				'theme'              => 'auto',
+				'icon_color'         => '#3b82f6',
+				'header_text_color'  => '#111827',
+				'faq_header_title'   => 'Häufige Fragen',
+				'advisor_header_title' => 'Mitglieder-Chat',
+				'favicon_url'        => '',
+				'footer_text'        => '',
+				'privacy_url'        => '',
+				'imprint_url'        => '',
+				'powered_by'         => true,
 			),
 			'knowledge' => array(
-				'chunk_max_tokens'  => 500,
-				'chunk_overlap'     => 50,
+				'chunk_max_tokens'     => 500,
+				'chunk_overlap'        => 50,
 				'similarity_threshold' => 0.7,
-				'max_results'       => 5,
+				'max_results'          => 5,
 			),
 			'analytics' => array(
-				'enabled'         => true,
-				'retention_days'  => 90,
-				'anonymize_ip'    => true,
-				'track_feedback'  => true,
+				'enabled'                => true,
+				'retention_days'         => 90,
+				'anonymize_ip'           => true,
+				'track_feedback'         => true,
+				'collect_local_analytics' => false,
+			),
+			'integrations' => array(
+				'openai_api_key'  => '',
+				'whisper_api_key' => '',
+				'rag_service'     => '',
+				'rag_endpoint'    => '',
+			),
+			'accounts' => array(
+				'account_page_id'      => 0,
+				'profile_url'          => '',
+				'profile_url_override' => '',
 			),
 		);
 
@@ -177,6 +197,20 @@ class Kraft_AI_Chat_Settings_REST {
 				'site_enabled'       => array(
 					'type'              => 'boolean',
 					'sanitize_callback' => 'rest_sanitize_boolean',
+				),
+				'faq_enabled'        => array(
+					'type'              => 'boolean',
+					'sanitize_callback' => 'rest_sanitize_boolean',
+				),
+				'advisor_enabled'    => array(
+					'type'              => 'boolean',
+					'sanitize_callback' => 'rest_sanitize_boolean',
+				),
+				'max_message_length' => array(
+					'type'              => 'integer',
+					'minimum'           => 50,
+					'maximum'           => 4000,
+					'sanitize_callback' => 'absint',
 				),
 				'default_lang'       => array(
 					'type'              => 'string',
@@ -243,45 +277,68 @@ class Kraft_AI_Chat_Settings_REST {
 				),
 			),
 			'branding'  => array(
-				'logo_url'        => array(
+				'logo_url'           => array(
 					'type'              => 'string',
 					'format'            => 'uri',
 					'sanitize_callback' => 'esc_url_raw',
 				),
-				'product_name'    => array(
+				'product_name'       => array(
 					'type'              => 'string',
 					'sanitize_callback' => 'sanitize_text_field',
 				),
-				'primary_color'   => array(
+				'primary_color'      => array(
 					'type'              => 'string',
 					'pattern'           => '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
 					'sanitize_callback' => 'sanitize_hex_color',
 				),
-				'secondary_color' => array(
+				'secondary_color'    => array(
 					'type'              => 'string',
 					'pattern'           => '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
 					'sanitize_callback' => 'sanitize_hex_color',
 				),
-				'favicon_url'     => array(
+				'theme'              => array(
 					'type'              => 'string',
-					'format'            => 'uri',
-					'sanitize_callback' => 'esc_url_raw',
+					'enum'              => array( 'light', 'dark', 'auto' ),
+					'sanitize_callback' => 'sanitize_text_field',
 				),
-				'footer_text'     => array(
+				'icon_color'         => array(
+					'type'              => 'string',
+					'pattern'           => '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+					'sanitize_callback' => 'sanitize_hex_color',
+				),
+				'header_text_color'  => array(
+					'type'              => 'string',
+					'pattern'           => '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+					'sanitize_callback' => 'sanitize_hex_color',
+				),
+				'faq_header_title'   => array(
 					'type'              => 'string',
 					'sanitize_callback' => 'sanitize_text_field',
 				),
-				'privacy_url'     => array(
+				'advisor_header_title' => array(
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'favicon_url'        => array(
 					'type'              => 'string',
 					'format'            => 'uri',
 					'sanitize_callback' => 'esc_url_raw',
 				),
-				'imprint_url'     => array(
+				'footer_text'        => array(
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'privacy_url'        => array(
 					'type'              => 'string',
 					'format'            => 'uri',
 					'sanitize_callback' => 'esc_url_raw',
 				),
-				'powered_by'      => array(
+				'imprint_url'        => array(
+					'type'              => 'string',
+					'format'            => 'uri',
+					'sanitize_callback' => 'esc_url_raw',
+				),
+				'powered_by'         => array(
 					'type'              => 'boolean',
 					'sanitize_callback' => 'rest_sanitize_boolean',
 				),
@@ -329,6 +386,46 @@ class Kraft_AI_Chat_Settings_REST {
 				'track_feedback'  => array(
 					'type'              => 'boolean',
 					'sanitize_callback' => 'rest_sanitize_boolean',
+				),
+				'collect_local_analytics' => array(
+					'type'              => 'boolean',
+					'sanitize_callback' => 'rest_sanitize_boolean',
+				),
+			),
+			'integrations' => array(
+				'openai_api_key'  => array(
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'whisper_api_key' => array(
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'rag_service'     => array(
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'rag_endpoint'    => array(
+					'type'              => 'string',
+					'format'            => 'uri',
+					'sanitize_callback' => 'esc_url_raw',
+				),
+			),
+			'accounts' => array(
+				'account_page_id'      => array(
+					'type'              => 'integer',
+					'minimum'           => 0,
+					'sanitize_callback' => 'absint',
+				),
+				'profile_url'          => array(
+					'type'              => 'string',
+					'format'            => 'uri',
+					'sanitize_callback' => 'esc_url_raw',
+				),
+				'profile_url_override' => array(
+					'type'              => 'string',
+					'format'            => 'uri',
+					'sanitize_callback' => 'esc_url_raw',
 				),
 			),
 		);
