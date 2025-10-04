@@ -1,7 +1,5 @@
-# **Kraft AI Chat** ist ein modernes WordPress‑Plugin (Stand 2025), das zwei Chatbots vereint: einen **FAQ‑Bot** für Gäste und einen **Mitglieder‑Bot*** Beim Enqueue des Widgets wird ein JS‑Objekt `KraftAIChatConfig.branding` via `wp  * **Avatar‑Button** (oben): rund (28–32 px), Quelle `KraftAIChatConfig.user.avatarUrl`; Fallback Initialen (1–2 Buchstaben). Klick öffnet Sidebar.localize_script()` übergeb* **Kraft AI Chat** (Hauptmenü)n (z. B. `{ primary: "#0ea5e9", logoUrl: 2. Aktivieren → **Admin‑Menü „Kraft AI Chat“** erscheint.…" }`).für eingeloggte Nutzer. Es ist DSGVO‑konform, vollständig **White‑Label‑fähig**, Multisite‑ready und setzt auf eine **React‑basierte Admin‑UI** mit REST‑First‑Architektur, i18n und A11y (WCAG AA). Kraft AI Chat – Dual Chatbot Pl  * Shortcode: `[kraft_ai_chat_chatbot type="faq"]`
-  * Block: **Kraft AI Chat → FAQ Chatbot** (mit Live‑Preview)in (WordPress 6.7+)
+# **Kraft AI Chat** ist ein modernes WordPress‑Plugin (Stand 2025), das zwei Chatbots vereint: einen **FAQ‑Bot** für Gäste und einen **Mitglieder‑Bot*** 
 
-**KI_Kraft** ist ein modernes WordPress‑Plugin (Stand 2025), das zwei Chatbots vereint: einen **FAQ‑Bot** für Gäste und einen **Mitglieder‑Bot** für eingeloggte Nutzer. Es ist DSGVO‑konform, vollständig **White‑Label‑fähig**, Multisite‑ready und setzt auf eine **React‑basierte Admin‑UI** mit REST‑First‑Architektur, i18n und A11y (WCAG AA).
 
 > **Kurzprofil**: Performance • Sicherheit • DSGVO • Internationalisierung • Barrierefreiheit • White‑Label • Multisite • RAG (Retrieval‑Augmented Generation)
 
