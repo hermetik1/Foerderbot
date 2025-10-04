@@ -34,6 +34,11 @@ define( 'KI_KRAFT_PLUGIN_DIR', KRAFT_AI_CHAT_PLUGIN_DIR );
 define( 'KI_KRAFT_PLUGIN_URL', KRAFT_AI_CHAT_PLUGIN_URL );
 
 /**
+ * Load the comprehensive debug logger for GitHub Copilot analysis
+ */
+require KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/debug-logger.php';
+
+/**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
