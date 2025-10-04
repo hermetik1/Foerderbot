@@ -17,6 +17,9 @@ interface GeneralSettings {
 	rate_limit_enabled: boolean;
 	rate_limit_max: number;
 	rate_limit_window: number;
+	floating_enabled: boolean;
+	floating_default_type: string;
+	floating_position: string;
 }
 
 /**
@@ -34,6 +37,9 @@ const GeneralTab: React.FC = () => {
 		rate_limit_enabled: true,
 		rate_limit_max: 60,
 		rate_limit_window: 3600,
+		floating_enabled: false,
+		floating_default_type: 'faq',
+		floating_position: 'br',
 	});
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
@@ -208,6 +214,67 @@ const GeneralTab: React.FC = () => {
 							<p className="description">How long to cache results (default: 86400 = 24 hours)</p>
 							{errors.cache_ttl && <p className="error-text">{errors.cache_ttl}</p>}
 						</div>
+					)}
+				</div>
+
+				<div className="form-section">
+					<h3>Floating Chat Bubble</h3>
+					<p className="description">Configure a global floating chat bubble that appears automatically on the website.</p>
+					
+					<div className="form-group">
+						<label htmlFor="floating_enabled">
+							<input
+								type="checkbox"
+								id="floating_enabled"
+								checked={settings.floating_enabled}
+								onChange={(e) => setSettings({ ...settings, floating_enabled: e.target.checked })}
+								disabled={!settings.site_enabled}
+							/>
+							{' '}Enable Floating Bubble
+						</label>
+						<p className="description">
+							Show a floating chat bubble on all pages (requires plugin to be enabled)
+						</p>
+						{!settings.site_enabled && (
+							<p className="description" style={{ color: '#d63638' }}>
+								⚠️ Plugin must be enabled site-wide first
+							</p>
+						)}
+						{settings.floating_enabled && settings.site_enabled && (
+							<p className="description" style={{ color: '#00a32a' }}>
+								💬 Bubble will be visible on the frontend when saved
+							</p>
+						)}
+					</div>
+
+					{settings.floating_enabled && (
+						<>
+							<div className="form-group">
+								<label htmlFor="floating_default_type">Default Chat Type</label>
+								<select
+									id="floating_default_type"
+									value={settings.floating_default_type}
+									onChange={(e) => setSettings({ ...settings, floating_default_type: e.target.value })}
+								>
+									<option value="faq">FAQ (Public)</option>
+									<option value="member">Member (Logged-in only)</option>
+								</select>
+								<p className="description">Which chatbot should open when the bubble is clicked</p>
+							</div>
+
+							<div className="form-group">
+								<label htmlFor="floating_position">Bubble Position</label>
+								<select
+									id="floating_position"
+									value={settings.floating_position}
+									onChange={(e) => setSettings({ ...settings, floating_position: e.target.value })}
+								>
+									<option value="br">Bottom Right</option>
+									<option value="bl">Bottom Left</option>
+								</select>
+								<p className="description">Where the floating bubble appears on the page</p>
+							</div>
+						</>
 					)}
 				</div>
 

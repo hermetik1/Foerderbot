@@ -409,6 +409,8 @@ class KI_Kraft_Core {
 		// Register deprecated shortcode with warning
 		add_shortcode( 'ki_kraft_chatbot', array( $this, 'render_deprecated_chatbot_shortcode' ) );
 		add_action( 'init', array( $this, 'register_blocks' ) );
+		// Add floating bubble to footer
+		add_action( 'wp_footer', array( $this, 'render_floating_bubble' ) );
 	}
 	
 	/**
@@ -519,6 +521,21 @@ class KI_Kraft_Core {
 				'render_callback' => array( $this, 'render_chatbot_shortcode' ),
 			)
 		);
+	}
+
+	/**
+	 * Render floating bubble in footer if enabled.
+	 */
+	public function render_floating_bubble() {
+		$settings     = get_option( 'kraft_ai_chat_general', array() );
+		$enabled      = $settings['floating_enabled'] ?? false;
+		$site_enabled = $settings['site_enabled'] ?? false;
+
+		if ( $enabled && $site_enabled ) {
+			$type = esc_attr( $settings['floating_default_type'] ?? 'faq' );
+			$pos  = esc_attr( $settings['floating_position'] ?? 'br' );
+			echo '<div class="kk-widget kk-floating kk-pos-' . $pos . '" data-type="' . $type . '"></div>';
+		}
 	}
 
 	/**

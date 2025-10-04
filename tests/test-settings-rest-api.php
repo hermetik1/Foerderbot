@@ -254,6 +254,204 @@ class Test_Settings_REST extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test floating settings defaults.
+	 */
+	public function test_floating_settings_defaults() {
+		wp_set_current_user( $this->admin_id );
+
+		$request  = new WP_REST_Request( 'GET', '/kraft_ai_chat/v1/settings/general' );
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertArrayHasKey( 'floating_enabled', $data );
+		$this->assertArrayHasKey( 'floating_default_type', $data );
+		$this->assertArrayHasKey( 'floating_position', $data );
+		$this->assertFalse( $data['floating_enabled'] );
+		$this->assertEquals( 'faq', $data['floating_default_type'] );
+		$this->assertEquals( 'br', $data['floating_position'] );
+	}
+
+	/**
+	 * Test updating floating settings.
+	 */
+	public function test_update_floating_settings() {
+		wp_set_current_user( $this->admin_id );
+
+		$request = new WP_REST_Request( 'POST', '/kraft_ai_chat/v1/settings/general' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body(
+			wp_json_encode(
+				array(
+					'floating_enabled'      => true,
+					'floating_default_type' => 'member',
+					'floating_position'     => 'bl',
+				)
+			)
+		);
+
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertTrue( $data['success'] );
+		$this->assertTrue( $data['data']['floating_enabled'] );
+		$this->assertEquals( 'member', $data['data']['floating_default_type'] );
+		$this->assertEquals( 'bl', $data['data']['floating_position'] );
+	}
+
+	/**
+	 * Test floating position enum validation.
+	 */
+	public function test_floating_position_validation() {
+		wp_set_current_user( $this->admin_id );
+
+		$request = new WP_REST_Request( 'POST', '/kraft_ai_chat/v1/settings/general' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body(
+			wp_json_encode(
+				array(
+					'floating_position' => 'invalid',
+				)
+			)
+		);
+
+		$response = rest_do_request( $request );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * Test floating type enum validation.
+	 */
+	public function test_floating_type_validation() {
+		wp_set_current_user( $this->admin_id );
+
+		$request = new WP_REST_Request( 'POST', '/kraft_ai_chat/v1/settings/general' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body(
+			wp_json_encode(
+				array(
+					'floating_default_type' => 'invalid',
+				)
+			)
+		);
+
+		$response = rest_do_request( $request );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * Test API key masking in GET requests.
+	 */
+	public function test_api_key_masking() {
+		wp_set_current_user( $this->admin_id );
+
+		// First, set an API key
+		update_option(
+			'kraft_ai_chat_integrations',
+			array(
+				'openai_api_key'  => 'sk-1234567890abcdef',
+				'whisper_api_key' => 'wk-abcdefghijklmnop',
+				'rag_service'     => 'test',
+				'rag_endpoint'    => 'http://example.com',
+			)
+		);
+
+		// Now get the settings
+		$request  = new WP_REST_Request( 'GET', '/kraft_ai_chat/v1/settings/integrations' );
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertStringContainsString( '*', $data['openai_api_key'] );
+		$this->assertStringContainsString( '*', $data['whisper_api_key'] );
+		$this->assertStringEndsWith( 'cdef', $data['openai_api_key'] );
+		$this->assertStringEndsWith( 'mnop', $data['whisper_api_key'] );
+	}
+
+	/**
+	 * Test API key preservation when not changed.
+	 */
+	public function test_api_key_preservation() {
+		wp_set_current_user( $this->admin_id );
+
+		// Set initial API key
+		update_option(
+			'kraft_ai_chat_integrations',
+			array(
+				'openai_api_key'  => 'sk-original-key-12345',
+				'whisper_api_key' => 'wk-original-key-67890',
+				'rag_service'     => 'test',
+				'rag_endpoint'    => 'http://example.com',
+			)
+		);
+
+		// Update other fields without changing API keys (send masked value)
+		$request = new WP_REST_Request( 'POST', '/kraft_ai_chat/v1/settings/integrations' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body(
+			wp_json_encode(
+				array(
+					'openai_api_key'  => '****************12345', // Masked value
+					'whisper_api_key' => '****************67890', // Masked value
+					'rag_service'     => 'updated',
+				)
+			)
+		);
+
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertTrue( $data['success'] );
+
+		// Verify the original key is preserved
+		$saved = get_option( 'kraft_ai_chat_integrations' );
+		$this->assertEquals( 'sk-original-key-12345', $saved['openai_api_key'] );
+		$this->assertEquals( 'wk-original-key-67890', $saved['whisper_api_key'] );
+		$this->assertEquals( 'updated', $saved['rag_service'] );
+	}
+
+	/**
+	 * Test updating API key with new value.
+	 */
+	public function test_api_key_update() {
+		wp_set_current_user( $this->admin_id );
+
+		// Set initial API key
+		update_option(
+			'kraft_ai_chat_integrations',
+			array(
+				'openai_api_key'  => 'sk-old-key',
+				'whisper_api_key' => 'wk-old-key',
+				'rag_service'     => 'test',
+				'rag_endpoint'    => 'http://example.com',
+			)
+		);
+
+		// Update with new API key
+		$request = new WP_REST_Request( 'POST', '/kraft_ai_chat/v1/settings/integrations' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body(
+			wp_json_encode(
+				array(
+					'openai_api_key' => 'sk-new-key-value',
+				)
+			)
+		);
+
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertTrue( $data['success'] );
+
+		// Verify the new key is saved
+		$saved = get_option( 'kraft_ai_chat_integrations' );
+		$this->assertEquals( 'sk-new-key-value', $saved['openai_api_key'] );
+	}
+
+	/**
 	 * Test branding settings with valid hex colors.
 	 */
 	public function test_update_branding_settings() {

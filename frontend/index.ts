@@ -43,18 +43,26 @@ class KIKraftWidget {
 	private messages: Message[] = [];
 	private sessionId: string | null = null;
 	private isTyping = false;
+	private isFloating = false;
 
 	constructor() {
 		this.init();
 	}
 
 	private init() {
+		// Prevent double-mount
+		if (document.querySelector('.kk-widget.kk-initialized')) {
+			return;
+		}
+
 		// Find widget containers
 		const containers = document.querySelectorAll('.kk-widget');
 		if (containers.length === 0) return;
 
 		containers.forEach((container) => {
 			this.container = container as HTMLElement;
+			this.isFloating = this.container.classList.contains('kk-floating');
+			this.container.classList.add('kk-initialized');
 			this.render();
 		});
 	}
@@ -64,6 +72,58 @@ class KIKraftWidget {
 
 		const type = this.container.getAttribute('data-type') || 'faq';
 		const config = window.KIKraftConfig;
+
+		// Check if member chat requires login
+		if (type === 'member' && !config.user.loggedIn) {
+			this.renderLoginPrompt();
+			return;
+		}
+
+		// Floating mode: render bubble + sidebar
+		if (this.isFloating) {
+			this.renderFloating(type, config);
+		} else {
+			// Regular mode: render rail + sidebar
+			this.renderRegular(type, config);
+		}
+
+		this.attachEventListeners();
+		this.restoreState();
+	}
+
+	private renderFloating(type: string, config: any) {
+		if (!this.container) return;
+
+		this.container.innerHTML = `
+			<button class="kk-floating-bubble" aria-label="Open chat" title="Chat">
+				💬
+			</button>
+			
+			<div class="kk-sidebar" data-theme="light" style="display: none;">
+				<div class="kk-sidebar__header">
+					<div class="kk-header-info">
+						<strong>${config.branding.product_name || 'KI Kraft'}</strong>
+						<span class="kk-type-badge">${type.toUpperCase()}</span>
+					</div>
+					<button class="kk-close-btn" aria-label="Close">✕</button>
+				</div>
+				<div class="kk-chat" role="log" aria-live="polite">
+					<div class="kk-messages"></div>
+				</div>
+				<div class="kk-composer">
+					<textarea 
+						class="kk-input" 
+						placeholder="${config.i18n.placeholder}"
+						rows="1"
+					></textarea>
+					<button class="kk-button-primary kk-send-btn">${config.i18n.send}</button>
+				</div>
+			</div>
+		`;
+	}
+
+	private renderRegular(type: string, config: any) {
+		if (!this.container) return;
 
 		this.container.innerHTML = `
 			<div class="kk-rail" data-theme="light">
@@ -101,14 +161,79 @@ class KIKraftWidget {
 				</div>
 			</div>
 		`;
+	}
 
-		this.attachEventListeners();
+	private renderLoginPrompt() {
+		if (!this.container) return;
+
+		// Get account page URL from config or use default
+		const accountUrl = '/account/'; // This should come from settings
+		
+		if (this.isFloating) {
+			this.container.innerHTML = `
+				<button class="kk-floating-bubble" aria-label="Login required" title="Login">
+					💬
+				</button>
+				<div class="kk-sidebar" data-theme="light" style="display: none;">
+					<div class="kk-sidebar__header">
+						<div class="kk-header-info">
+							<strong>Mitglieder-Chat</strong>
+						</div>
+						<button class="kk-close-btn" aria-label="Close">✕</button>
+					</div>
+					<div class="kk-login-prompt">
+						<p>Bitte melde dich an, um den Mitglieder-Chat zu nutzen.</p>
+						<a href="${accountUrl}" class="kk-btn">Jetzt einloggen</a>
+					</div>
+				</div>
+			`;
+		} else {
+			this.container.innerHTML = `
+				<div class="kk-login-prompt">
+					<p>Bitte melde dich an, um den Mitglieder-Chat zu nutzen.</p>
+					<a href="${accountUrl}" class="kk-btn">Jetzt einloggen</a>
+				</div>
+			`;
+		}
+
+		// Still attach close button listener
+		const closeBtn = this.container.querySelector('.kk-close-btn');
+		const bubble = this.container.querySelector('.kk-floating-bubble');
+		if (closeBtn) {
+			closeBtn.addEventListener('click', () => this.toggleSidebar());
+		}
+		if (bubble) {
+			bubble.addEventListener('click', () => this.toggleSidebar());
+		}
+	}
+
+	private restoreState() {
+		// Restore sidebar state from localStorage (only for floating mode)
+		if (this.isFloating) {
+			const savedState = localStorage.getItem('kraft_ai_chat_open');
+			if (savedState === 'true') {
+				this.openSidebar();
+			}
+		}
+	}
+
+	private saveState() {
+		// Save sidebar state to localStorage (only for floating mode)
+		if (this.isFloating) {
+			localStorage.setItem('kraft_ai_chat_open', this.sidebarOpen.toString());
+		}
 	}
 
 	private attachEventListeners() {
 		if (!this.container) return;
 
-		// Rail buttons
+		// For floating mode
+		const floatingBubble = this.container.querySelector('.kk-floating-bubble');
+		if (floatingBubble) {
+			floatingBubble.addEventListener('click', () => this.toggleSidebar());
+		}
+
+		// Rail buttons (regular mode)
 		const chatBtn = this.container.querySelector('.kk-chat-btn');
 		const themeToggle = this.container.querySelector('.kk-theme-toggle');
 		const closeBtn = this.container.querySelector('.kk-close-btn');
@@ -124,22 +249,68 @@ class KIKraftWidget {
 				this.sendMessage();
 			}
 		});
+
+		// ESC key to close sidebar
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && this.sidebarOpen) {
+				this.toggleSidebar();
+			}
+		});
 	}
 
 	private toggleSidebar() {
 		if (!this.container) return;
 
-		const sidebar = this.container.querySelector('.kk-sidebar');
+		const sidebar = this.container.querySelector('.kk-sidebar') as HTMLElement;
 		if (!sidebar) return;
 
 		this.sidebarOpen = !this.sidebarOpen;
+		
 		if (this.sidebarOpen) {
-			sidebar.classList.add('open');
-			if (!this.sessionId && window.KIKraftConfig.user.loggedIn) {
-				this.createSession();
-			}
+			this.openSidebar();
 		} else {
-			sidebar.classList.remove('open');
+			this.closeSidebar();
+		}
+
+		this.saveState();
+	}
+
+	private openSidebar() {
+		if (!this.container) return;
+
+		const sidebar = this.container.querySelector('.kk-sidebar') as HTMLElement;
+		if (!sidebar) return;
+
+		this.sidebarOpen = true;
+		
+		if (this.isFloating) {
+			sidebar.style.display = 'flex';
+			// Trigger reflow for animation
+			sidebar.offsetHeight;
+			sidebar.classList.add('open');
+		} else {
+			sidebar.classList.add('open');
+		}
+
+		if (!this.sessionId && window.KIKraftConfig.user.loggedIn) {
+			this.createSession();
+		}
+	}
+
+	private closeSidebar() {
+		if (!this.container) return;
+
+		const sidebar = this.container.querySelector('.kk-sidebar') as HTMLElement;
+		if (!sidebar) return;
+
+		this.sidebarOpen = false;
+		sidebar.classList.remove('open');
+
+		if (this.isFloating) {
+			// Wait for animation before hiding
+			setTimeout(() => {
+				sidebar.style.display = 'none';
+			}, 300);
 		}
 	}
 
