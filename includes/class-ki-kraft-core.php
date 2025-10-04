@@ -31,8 +31,18 @@ class KI_Kraft_Core {
 		$this->define_public_hooks();
 		
 		// Register activation/deactivation hooks
-		register_activation_hook( KRAFT_AI_CHAT_PLUGIN_DIR . 'ki-kraft.php', array( $this, 'activate' ) );
-		register_deactivation_hook( KRAFT_AI_CHAT_PLUGIN_DIR . 'ki-kraft.php', array( $this, 'deactivate' ) );
+		register_activation_hook( KRAFT_AI_CHAT_PLUGIN_DIR . 'ki-kraft.php', array( 'Kraft_AI_Chat_Activator', 'activate' ) );
+		register_deactivation_hook( KRAFT_AI_CHAT_PLUGIN_DIR . 'ki-kraft.php', array( 'Kraft_AI_Chat_Activator', 'deactivate' ) );
+		
+		// Check for schema upgrades on admin init
+		add_action( 'admin_init', array( $this, 'maybe_upgrade_schema' ) );
+	}
+	
+	/**
+	 * Check and run schema upgrades if needed.
+	 */
+	public function maybe_upgrade_schema() {
+		kraft_ai_chat_maybe_upgrade_schema();
 	}
 	
 	/**
@@ -137,8 +147,11 @@ class KI_Kraft_Core {
 	 * Load required dependencies.
 	 */
 	private function load_dependencies() {
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/db.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-kraft-ai-chat-activator.php';
 		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-rest.php';
 		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/rest/class-kraft-ai-chat-settings-rest.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/rest/class-kraft-ai-chat-chat-rest.php';
 		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-faq.php';
 		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-member.php';
 		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-privacy.php';
@@ -436,5 +449,6 @@ class KI_Kraft_Core {
 		// Initialize REST API
 		add_action( 'rest_api_init', array( 'KI_Kraft_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Kraft_AI_Chat_Settings_REST', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Kraft_AI_Chat_Chat_REST', 'register_routes' ) );
 	}
 }
