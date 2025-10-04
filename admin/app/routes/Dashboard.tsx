@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import GeneralTab from './Settings/GeneralTab';
 import PrivacyTab from './Settings/PrivacyTab';
 import WhiteLabelTab from './Settings/WhiteLabelTab';
 import KnowledgeTab from './Settings/KnowledgeTab';
 import AnalyticsTab from './Settings/AnalyticsTab';
 
-declare const kiKraftAdmin: {
+declare const kraftAIChatAdmin: {
 	apiUrl: string;
 	nonce: string;
 	branding: any;
+	page?: string;
 };
 
 interface AnalyticsSummary {
@@ -24,17 +24,25 @@ interface AnalyticsSummary {
 const Dashboard: React.FC = () => {
 	const [activeTab, setActiveTab] = useState<string>('overview');
 	const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 
+	// Don't auto-load analytics on mount
 	useEffect(() => {
-		fetchAnalytics();
-	}, []);
+		// Only fetch analytics when Analytics tab is active
+		if (activeTab === 'analytics') {
+			fetchAnalytics();
+		}
+	}, [activeTab]);
 
 	const fetchAnalytics = async () => {
+		if (analytics !== null) {
+			return; // Already loaded
+		}
+		setLoading(true);
 		try {
-			const response = await fetch(`${kiKraftAdmin.apiUrl}/analytics/summary?days=7`, {
+			const response = await fetch(`${kraftAIChatAdmin.apiUrl}/analytics/summary?days=7`, {
 				headers: {
-					'X-WP-Nonce': kiKraftAdmin.nonce,
+					'X-WP-Nonce': kraftAIChatAdmin.nonce,
 				},
 			});
 			const data = await response.json();
@@ -52,61 +60,37 @@ const Dashboard: React.FC = () => {
 				return (
 					<div className="dashboard-overview">
 						<h1>KI Kraft Dashboard</h1>
-						{loading ? (
-							<p>Loading analytics...</p>
-						) : analytics ? (
-							<div className="dashboard-grid">
-								<div className="dashboard-card">
-									<h2>Query Statistics (Last 7 Days)</h2>
-									<div className="stats-grid">
-										<div className="stat">
-											<span className="stat-label">Total Queries</span>
-											<span className="stat-value">{analytics.total}</span>
-										</div>
-										<div className="stat">
-											<span className="stat-label">Answered</span>
-											<span className="stat-value success">{analytics.answered}</span>
-										</div>
-										<div className="stat">
-											<span className="stat-label">Unanswered</span>
-											<span className="stat-value warning">{analytics.unanswered}</span>
-										</div>
-										<div className="stat">
-											<span className="stat-label">Success Rate</span>
-											<span className="stat-value">
-												{analytics.total > 0
-													? Math.round((analytics.answered / analytics.total) * 100)
-													: 0}
-												%
-											</span>
-										</div>
-									</div>
-								</div>
-								<div className="dashboard-card">
-									<h2>Quick Actions</h2>
-									<div className="action-buttons">
-										<button onClick={() => setActiveTab('knowledge')} className="action-btn">
-											📚 Manage Knowledge Base
-										</button>
-										<button onClick={() => setActiveTab('analytics')} className="action-btn">
-											📊 View Detailed Analytics
-										</button>
-										<button onClick={() => setActiveTab('settings')} className="action-btn">
-											⚙️ Configure Settings
-										</button>
-										<button onClick={() => setActiveTab('branding')} className="action-btn">
-											🎨 Customize Branding
-										</button>
-									</div>
+						<div className="dashboard-grid">
+							<div className="dashboard-card">
+								<h2>Welcome to Kraft AI Chat</h2>
+								<p>Use the tabs above to manage your chatbot, knowledge base, analytics, privacy settings, and branding.</p>
+								<div className="action-buttons" style={{ marginTop: '20px' }}>
+									<button onClick={() => setActiveTab('knowledge')} className="action-btn">
+										📚 Manage Knowledge Base
+									</button>
+									<button onClick={() => setActiveTab('analytics')} className="action-btn">
+										📊 View Analytics
+									</button>
+									<button onClick={() => setActiveTab('privacy')} className="action-btn">
+										🔒 Privacy Settings
+									</button>
+									<button onClick={() => setActiveTab('branding')} className="action-btn">
+										🎨 Customize Branding
+									</button>
 								</div>
 							</div>
-						) : (
-							<p>Failed to load analytics</p>
-						)}
+							<div className="dashboard-card">
+								<h2>Getting Started</h2>
+								<ol>
+									<li>Add knowledge entries in the Knowledge Base tab</li>
+									<li>Configure privacy and data retention settings</li>
+									<li>Customize branding to match your site</li>
+									<li>Monitor usage in the Analytics tab</li>
+								</ol>
+							</div>
+						</div>
 					</div>
 				);
-			case 'settings':
-				return <GeneralTab />;
 			case 'privacy':
 				return <PrivacyTab />;
 			case 'branding':
@@ -140,12 +124,6 @@ const Dashboard: React.FC = () => {
 					onClick={() => setActiveTab('analytics')}
 				>
 					Analytics
-				</button>
-				<button
-					className={activeTab === 'settings' ? 'active' : ''}
-					onClick={() => setActiveTab('settings')}
-				>
-					Settings
 				</button>
 				<button
 					className={activeTab === 'privacy' ? 'active' : ''}
