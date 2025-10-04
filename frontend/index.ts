@@ -67,6 +67,9 @@ declare global {
 // 🧠 Universal Safe Config Initialization
 // Ensure window.kraftAIChatConfig always exists with safe defaults
 window.kraftAIChatConfig = window.kraftAIChatConfig || {} as KraftAIChatConfig;
+window.kraftAIChatConfig.apiUrl = window.kraftAIChatConfig.apiUrl || '';
+window.kraftAIChatConfig.nonce = window.kraftAIChatConfig.nonce || '';
+window.kraftAIChatConfig.version = window.kraftAIChatConfig.version || '1.0.0';
 window.kraftAIChatConfig.branding = window.kraftAIChatConfig.branding || {} as BrandingConfig;
 window.kraftAIChatConfig.settings = window.kraftAIChatConfig.settings || { general: {}, accounts: {} };
 window.kraftAIChatConfig.user = window.kraftAIChatConfig.user || { loggedIn: false };
@@ -394,6 +397,12 @@ class KIKraftWidget {
 	}
 
 	private async createSession() {
+		// Safety check: ensure apiUrl and nonce are available
+		if (!window.kraftAIChatConfig.apiUrl || !window.kraftAIChatConfig.nonce) {
+			console.error('Failed to create session: Missing API configuration');
+			return;
+		}
+
 		try {
 			const response = await fetch(`${window.kraftAIChatConfig.apiUrl}/member/session`, {
 				method: 'POST',
@@ -415,6 +424,16 @@ class KIKraftWidget {
 		const message = input.value.trim();
 
 		if (!message) return;
+
+		// Safety check: ensure API configuration is available
+		if (!window.kraftAIChatConfig.apiUrl || !window.kraftAIChatConfig.nonce) {
+			console.error('Failed to send message: Missing API configuration');
+			this.addMessage({
+				role: 'assistant',
+				content: 'Configuration error: Unable to connect to chat service.',
+			});
+			return;
+		}
 
 		// Clear input
 		input.value = '';
