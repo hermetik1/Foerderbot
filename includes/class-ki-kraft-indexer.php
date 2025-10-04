@@ -24,7 +24,7 @@ class KI_Kraft_Indexer {
 		$files = $request->get_file_params();
 
 		if ( empty( $files ) ) {
-			return new WP_Error( 'no_file', __( 'No file provided.', 'ki-kraft' ), array( 'status' => 400 ) );
+			return new WP_Error( 'no_file', __( 'No file provided.', KRAFT_AI_CHAT_TEXTDOMAIN ), array( 'status' => 400 ) );
 		}
 
 		// TODO: Validate file type (PDF/DOCX/MD/TXT)

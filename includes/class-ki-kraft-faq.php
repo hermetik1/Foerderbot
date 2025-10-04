@@ -24,7 +24,7 @@ class KI_Kraft_FAQ {
 		$query = $request->get_param( 'query' );
 
 		if ( empty( $query ) ) {
-			return new WP_Error( 'missing_query', __( 'Query parameter is required.', 'ki-kraft' ), array( 'status' => 400 ) );
+			return new WP_Error( 'missing_query', __( 'Query parameter is required.', KRAFT_AI_CHAT_TEXTDOMAIN ), array( 'status' => 400 ) );
 		}
 
 		// Log analytics
@@ -39,7 +39,7 @@ class KI_Kraft_FAQ {
 			
 			return rest_ensure_response(
 				array(
-					'answer'  => __( 'I could not find an answer to your question. Would you like to contact our support team?', 'ki-kraft' ),
+					'answer'  => __( 'I could not find an answer to your question. Would you like to contact our support team?', KRAFT_AI_CHAT_TEXTDOMAIN ),
 					'sources' => array(),
 					'confidence' => 0,
 					'fallback' => true,

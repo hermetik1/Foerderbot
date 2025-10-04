@@ -39,7 +39,7 @@ class KI_Kraft_Member {
 		);
 
 		if ( ! $result ) {
-			return new WP_Error( 'session_error', __( 'Could not create session.', 'ki-kraft' ), array( 'status' => 500 ) );
+			return new WP_Error( 'session_error', __( 'Could not create session.', KRAFT_AI_CHAT_TEXTDOMAIN ), array( 'status' => 500 ) );
 		}
 
 		return rest_ensure_response(
@@ -109,7 +109,7 @@ class KI_Kraft_Member {
 		$user_id    = get_current_user_id();
 
 		if ( empty( $session_id ) || empty( $message ) ) {
-			return new WP_Error( 'missing_params', __( 'Session ID and message are required.', 'ki-kraft' ), array( 'status' => 400 ) );
+			return new WP_Error( 'missing_params', __( 'Session ID and message are required.', KRAFT_AI_CHAT_TEXTDOMAIN ), array( 'status' => 400 ) );
 		}
 
 		// Verify session belongs to user
@@ -124,7 +124,7 @@ class KI_Kraft_Member {
 		);
 
 		if ( ! $conversation ) {
-			return new WP_Error( 'invalid_session', __( 'Invalid session.', 'ki-kraft' ), array( 'status' => 403 ) );
+			return new WP_Error( 'invalid_session', __( 'Invalid session.', KRAFT_AI_CHAT_TEXTDOMAIN ), array( 'status' => 403 ) );
 		}
 
 		// Store user message
@@ -147,7 +147,7 @@ class KI_Kraft_Member {
 		$results = self::search_knowledge_with_scope( $message, $scope, 3 );
 
 		if ( empty( $results ) ) {
-			$response_text = __( 'I could not find specific information about that. Would you like to escalate this to our support team?', 'ki-kraft' );
+			$response_text = __( 'I could not find specific information about that. Would you like to escalate this to our support team?', KRAFT_AI_CHAT_TEXTDOMAIN );
 			$sources = array();
 			$confidence = 0;
 		} else {
@@ -259,7 +259,7 @@ class KI_Kraft_Member {
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => __( 'Your request has been forwarded to our support team. They will contact you soon.', 'ki-kraft' ),
+				'message' => __( 'Your request has been forwarded to our support team. They will contact you soon.', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			)
 		);
 	}

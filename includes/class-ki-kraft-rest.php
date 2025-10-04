@@ -20,7 +20,7 @@ class KI_Kraft_REST {
 	public static function register_routes() {
 		// FAQ routes
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/faq/query',
 			array(
 				'methods'             => 'POST',
@@ -31,7 +31,7 @@ class KI_Kraft_REST {
 
 		// Member routes
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/member/session',
 			array(
 				'methods'             => 'POST',
@@ -41,7 +41,7 @@ class KI_Kraft_REST {
 		);
 
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/member/sessions',
 			array(
 				'methods'             => 'GET',
@@ -51,7 +51,7 @@ class KI_Kraft_REST {
 		);
 
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/member/message',
 			array(
 				'methods'             => 'POST',
@@ -61,7 +61,7 @@ class KI_Kraft_REST {
 		);
 
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/member/upload',
 			array(
 				'methods'             => 'POST',
@@ -71,7 +71,7 @@ class KI_Kraft_REST {
 		);
 
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/member/handoff',
 			array(
 				'methods'             => 'POST',
@@ -82,7 +82,7 @@ class KI_Kraft_REST {
 
 		// Analytics routes
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/analytics/summary',
 			array(
 				'methods'             => 'GET',
@@ -93,7 +93,7 @@ class KI_Kraft_REST {
 		
 		// Knowledge management routes
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/knowledge',
 			array(
 				'methods'             => 'GET',
@@ -103,7 +103,7 @@ class KI_Kraft_REST {
 		);
 		
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/knowledge',
 			array(
 				'methods'             => 'POST',
@@ -113,7 +113,7 @@ class KI_Kraft_REST {
 		);
 		
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/knowledge/(?P<id>\d+)',
 			array(
 				'methods'             => 'DELETE',
@@ -124,7 +124,7 @@ class KI_Kraft_REST {
 		
 		// Branding routes
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/branding',
 			array(
 				'methods'             => 'GET',
@@ -134,7 +134,7 @@ class KI_Kraft_REST {
 		);
 		
 		register_rest_route(
-			'ki_kraft/v1',
+			KRAFT_AI_CHAT_REST_NS,
 			'/branding',
 			array(
 				'methods'             => 'POST',
@@ -316,13 +316,13 @@ class KI_Kraft_REST {
 		$scope = $request->get_param( 'scope' ) ? $request->get_param( 'scope' ) : 'public';
 		
 		if ( empty( $title ) || empty( $content ) ) {
-			return new WP_Error( 'missing_params', __( 'Title and content are required.', 'ki-kraft' ), array( 'status' => 400 ) );
+			return new WP_Error( 'missing_params', __( 'Title and content are required.', KRAFT_AI_CHAT_TEXTDOMAIN ), array( 'status' => 400 ) );
 		}
 		
 		$id = KI_Kraft_FAQ::add_entry( $title, $content, $scope );
 		
 		if ( ! $id ) {
-			return new WP_Error( 'insert_error', __( 'Could not add entry.', 'ki-kraft' ), array( 'status' => 500 ) );
+			return new WP_Error( 'insert_error', __( 'Could not add entry.', KRAFT_AI_CHAT_TEXTDOMAIN ), array( 'status' => 500 ) );
 		}
 		
 		return rest_ensure_response(
