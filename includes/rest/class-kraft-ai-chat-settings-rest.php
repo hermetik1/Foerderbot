@@ -69,6 +69,11 @@ class Kraft_AI_Chat_Settings_REST {
 		// Ensure all default keys exist
 		$settings = wp_parse_args( $settings, $defaults );
 
+		// Mask API keys for integrations group
+		if ( 'integrations' === $group ) {
+			$settings = self::mask_secrets( $settings );
+		}
+
 		return rest_ensure_response( $settings );
 	}
 
@@ -89,6 +94,12 @@ class Kraft_AI_Chat_Settings_REST {
 				__( 'No settings data provided.', KRAFT_AI_CHAT_TEXTDOMAIN ),
 				array( 'status' => 400 )
 			);
+		}
+
+		// For integrations, merge with existing settings to preserve unchanged secrets
+		if ( 'integrations' === $group ) {
+			$existing_settings = get_option( $option_name, self::get_defaults_for_group( $group ) );
+			$params            = self::merge_secrets( $params, $existing_settings );
 		}
 
 		// Sanitize settings
@@ -123,16 +134,19 @@ class Kraft_AI_Chat_Settings_REST {
 	public static function get_defaults_for_group( $group ) {
 		$defaults = array(
 			'general'   => array(
-				'site_enabled'       => true,
-				'faq_enabled'        => false,
-				'advisor_enabled'    => false,
-				'max_message_length' => 1000,
-				'default_lang'       => 'de',
-				'cache_enabled'      => true,
-				'cache_ttl'          => 86400,
-				'rate_limit_enabled' => true,
-				'rate_limit_max'     => 60,
-				'rate_limit_window'  => 3600,
+				'site_enabled'         => true,
+				'faq_enabled'          => false,
+				'advisor_enabled'      => false,
+				'max_message_length'   => 1000,
+				'default_lang'         => 'de',
+				'cache_enabled'        => true,
+				'cache_ttl'            => 86400,
+				'rate_limit_enabled'   => true,
+				'rate_limit_max'       => 60,
+				'rate_limit_window'    => 3600,
+				'floating_enabled'     => false,
+				'floating_default_type' => 'faq',
+				'floating_position'    => 'br',
 			),
 			'privacy'   => array(
 				'retention_enabled'      => true,
@@ -242,6 +256,23 @@ class Kraft_AI_Chat_Settings_REST {
 					'minimum'           => 60,
 					'maximum'           => 86400,
 					'sanitize_callback' => 'absint',
+				),
+				'floating_enabled'   => array(
+					'type'              => 'boolean',
+					'default'           => false,
+					'sanitize_callback' => 'rest_sanitize_boolean',
+				),
+				'floating_default_type' => array(
+					'type'              => 'string',
+					'enum'              => array( 'faq', 'member' ),
+					'default'           => 'faq',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'floating_position'  => array(
+					'type'              => 'string',
+					'enum'              => array( 'br', 'bl' ),
+					'default'           => 'br',
+					'sanitize_callback' => 'sanitize_text_field',
 				),
 			),
 			'privacy'   => array(
@@ -543,5 +574,54 @@ class Kraft_AI_Chat_Settings_REST {
 			default:
 				return true;
 		}
+	}
+
+	/**
+	 * Mask secret values (API keys) for security.
+	 *
+	 * @param array $settings Settings array to mask.
+	 * @return array Masked settings.
+	 */
+	private static function mask_secrets( $settings ) {
+		$secret_fields = array( 'openai_api_key', 'whisper_api_key' );
+
+		foreach ( $secret_fields as $field ) {
+			if ( isset( $settings[ $field ] ) && ! empty( $settings[ $field ] ) ) {
+				$key                   = $settings[ $field ];
+				$masked                = str_repeat( '*', max( 0, strlen( $key ) - 4 ) ) . substr( $key, -4 );
+				$settings[ $field ]    = $masked;
+			}
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Merge secrets from existing settings if not changed.
+	 *
+	 * @param array $new_settings New settings from request.
+	 * @param array $existing_settings Existing settings from database.
+	 * @return array Merged settings.
+	 */
+	private static function merge_secrets( $new_settings, $existing_settings ) {
+		$secret_fields = array( 'openai_api_key', 'whisper_api_key' );
+
+		foreach ( $secret_fields as $field ) {
+			// If field is not set or empty in new settings, preserve existing value
+			if ( ! isset( $new_settings[ $field ] ) || empty( $new_settings[ $field ] ) ) {
+				if ( isset( $existing_settings[ $field ] ) ) {
+					$new_settings[ $field ] = $existing_settings[ $field ];
+				}
+			} else {
+				// Check if the value is a masked value (contains only asterisks at the start)
+				$value = $new_settings[ $field ];
+				if ( preg_match( '/^\*+/', $value ) && isset( $existing_settings[ $field ] ) ) {
+					// It's a masked value, keep the existing secret
+					$new_settings[ $field ] = $existing_settings[ $field ];
+				}
+			}
+		}
+
+		return $new_settings;
 	}
 }
