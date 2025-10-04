@@ -1,4 +1,4 @@
-# 🧠 KI_Kraft – Dual Chatbot Plugin (WordPress 6.7+)
+🧠 KI_Kraft – Dual Chatbot Plugin (WordPress 6.7+)
 
 **KI_Kraft** ist ein modernes WordPress-Plugin (Stand 2025), das zwei intelligente Chatbots vereint:
 einen **FAQ-Bot** für Gäste und einen **Mitglieder-Bot** für eingeloggte Nutzer.  
@@ -67,3 +67,48 @@ mit modularer Architektur und Fokus auf:
 
 ## 🧭 Geplante Struktur
 
+ki-kraft/
+├─ ki-kraft.php
+├─ includes/
+│ ├─ class-ki-kraft-core.php
+│ ├─ class-ki-kraft-rest.php
+│ ├─ class-ki-kraft-faq.php
+│ ├─ class-ki-kraft-member.php
+│ ├─ class-ki-kraft-privacy.php
+│ └─ class-ki-kraft-branding.php
+├─ admin/
+│ └─ App.js (React Interface)
+├─ assets/
+│ ├─ js/
+│ └─ css/
+├─ languages/
+└─ README.md
+
+yaml
+Code kopieren
+
+---
+
+## 💡 Entwicklung
+
+- Verwende `npm install` und `npm run build:plugin` für Builds.  
+- PHP-Code validieren mit `phpcs --standard=WordPress`.  
+- Tests ausführen via `npm run test` (Vitest) und `vendor/bin/phpunit`.
+
+---
+
+## 🔮 Geplante Erweiterungen
+- **Sprachumschaltung (DE/EN)** im Frontend.  
+- **Rollenbasierte Knowledge-Views** für Mitglieder.  
+- **REST-Logging API** mit Retry-Mechanismus.  
+- **Progressive Enhancement** mit Web Components.  
+- **KI-Kraft Cloud Index Connector** (optional extern).
+
+---
+
+## 🧑‍💻 Mitwirken
+Dieses Projekt wird gemeinschaftlich im Rahmen des gemeinnützigen Vereins **[KI Kraft](https://www.ki-kraft.at)** entwickelt.
+
+---
+
+© 2025 KI Kraft – Dual Chatbot Plugin. GPLv3 lizenziert.
