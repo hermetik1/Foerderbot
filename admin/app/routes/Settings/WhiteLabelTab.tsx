@@ -12,6 +12,11 @@ interface BrandingSettings {
 	product_name: string;
 	primary_color: string;
 	secondary_color: string;
+	theme: string;
+	icon_color: string;
+	header_text_color: string;
+	faq_header_title: string;
+	advisor_header_title: string;
 	favicon_url: string;
 	footer_text: string;
 	privacy_url: string;
@@ -28,6 +33,11 @@ const WhiteLabelTab: React.FC = () => {
 		product_name: 'KI Kraft',
 		primary_color: '#3b82f6',
 		secondary_color: '#60a5fa',
+		theme: 'auto',
+		icon_color: '#3b82f6',
+		header_text_color: '#111827',
+		faq_header_title: 'Häufige Fragen',
+		advisor_header_title: 'Mitglieder-Chat',
 		favicon_url: '',
 		footer_text: '',
 		privacy_url: '',
@@ -183,6 +193,91 @@ const WhiteLabelTab: React.FC = () => {
 						</div>
 						<p className="description" id="secondary_color_desc">Secondary brand color (hex format)</p>
 						{errors.secondary_color && <p className="error-text">{errors.secondary_color}</p>}
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="theme">Theme</label>
+						<select
+							id="theme"
+							value={config.theme}
+							onChange={(e) => setConfig({ ...config, theme: e.target.value })}
+						>
+							<option value="light">Light</option>
+							<option value="dark">Dark</option>
+							<option value="auto">Auto (system preference)</option>
+						</select>
+						<p className="description">Color theme for the chatbot interface</p>
+						{errors.theme && <p className="error-text">{errors.theme}</p>}
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="icon_color">Icon Color</label>
+						<div className="color-input">
+							<input
+								type="color"
+								id="icon_color"
+								value={config.icon_color}
+								onChange={(e) => setConfig({ ...config, icon_color: e.target.value })}
+							/>
+							<input
+								type="text"
+								value={config.icon_color}
+								onChange={(e) => setConfig({ ...config, icon_color: e.target.value })}
+								placeholder="#3b82f6"
+								pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+							/>
+						</div>
+						<p className="description">Color for icons in the chatbot</p>
+						{errors.icon_color && <p className="error-text">{errors.icon_color}</p>}
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="header_text_color">Header Text Color</label>
+						<div className="color-input">
+							<input
+								type="color"
+								id="header_text_color"
+								value={config.header_text_color}
+								onChange={(e) => setConfig({ ...config, header_text_color: e.target.value })}
+							/>
+							<input
+								type="text"
+								value={config.header_text_color}
+								onChange={(e) => setConfig({ ...config, header_text_color: e.target.value })}
+								placeholder="#111827"
+								pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+							/>
+						</div>
+						<p className="description">Color for header text in the chatbot</p>
+						{errors.header_text_color && <p className="error-text">{errors.header_text_color}</p>}
+					</div>
+				</div>
+
+				<div className="form-section">
+					<h3>Chatbot Titles</h3>
+
+					<div className="form-group">
+						<label htmlFor="faq_header_title">FAQ Bot Header Title</label>
+						<input
+							type="text"
+							id="faq_header_title"
+							value={config.faq_header_title}
+							onChange={(e) => setConfig({ ...config, faq_header_title: e.target.value })}
+						/>
+						<p className="description">Title shown in FAQ chatbot header</p>
+						{errors.faq_header_title && <p className="error-text">{errors.faq_header_title}</p>}
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="advisor_header_title">Advisor Bot Header Title</label>
+						<input
+							type="text"
+							id="advisor_header_title"
+							value={config.advisor_header_title}
+							onChange={(e) => setConfig({ ...config, advisor_header_title: e.target.value })}
+						/>
+						<p className="description">Title shown in advisor chatbot header</p>
+						{errors.advisor_header_title && <p className="error-text">{errors.advisor_header_title}</p>}
 					</div>
 				</div>
 

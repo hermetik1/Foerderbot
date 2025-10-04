@@ -142,6 +142,17 @@ class KI_Kraft_REST {
 				'permission_callback' => array( __CLASS__, 'manage_options_check' ),
 			)
 		);
+		
+		// Seed data endpoint
+		register_rest_route(
+			KRAFT_AI_CHAT_REST_NS,
+			'/seed',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'seed_sample_data' ),
+				'permission_callback' => array( __CLASS__, 'manage_options_check' ),
+			)
+		);
 	}
 
 	/**
@@ -366,6 +377,30 @@ class KI_Kraft_REST {
 			array(
 				'success' => $result,
 			)
+		);
+	}
+	
+	/**
+	 * Seed sample data.
+	 */
+	public static function seed_sample_data( $request ) {
+		// Call the seeder function
+		if ( function_exists( 'ki_kraft_seed_sample_data' ) ) {
+			$count = ki_kraft_seed_sample_data();
+			
+			return rest_ensure_response(
+				array(
+					'success' => true,
+					'count'   => $count,
+					'message' => sprintf( __( 'Successfully added %d sample FAQ entries.', KRAFT_AI_CHAT_TEXTDOMAIN ), $count ),
+				)
+			);
+		}
+		
+		return new WP_Error(
+			'seed_unavailable',
+			__( 'Seeder function is not available.', KRAFT_AI_CHAT_TEXTDOMAIN ),
+			array( 'status' => 500 )
 		);
 	}
 }
