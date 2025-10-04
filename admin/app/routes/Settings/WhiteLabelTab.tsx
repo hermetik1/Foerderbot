@@ -1,16 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { settingsAPI, APIError } from '../../lib/api';
 
-declare const kiKraftAdmin: {
+declare const kraftAIChatAdmin: {
 	apiUrl: string;
 	nonce: string;
 	branding: any;
 };
 
+interface BrandingSettings {
+	logo_url: string;
+	product_name: string;
+	primary_color: string;
+	secondary_color: string;
+	favicon_url: string;
+	footer_text: string;
+	privacy_url: string;
+	imprint_url: string;
+	powered_by: boolean;
+}
+
 /**
  * White-label settings tab component.
  */
 const WhiteLabelTab: React.FC = () => {
-	const [config, setConfig] = useState({
+	const [config, setConfig] = useState<BrandingSettings>({
 		logo_url: '',
 		product_name: 'KI Kraft',
 		primary_color: '#3b82f6',
@@ -21,42 +34,61 @@ const WhiteLabelTab: React.FC = () => {
 		imprint_url: '',
 		powered_by: true,
 	});
+	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [message, setMessage] = useState('');
+	const [errors, setErrors] = useState<Record<string, string>>({});
 
 	useEffect(() => {
-		if (kiKraftAdmin.branding) {
-			setConfig(kiKraftAdmin.branding);
-		}
+		loadSettings();
 	}, []);
+
+	const loadSettings = async () => {
+		try {
+			const data = await settingsAPI.get('branding');
+			setConfig(data);
+		} catch (error) {
+			console.error('Failed to load settings:', error);
+			setMessage('Failed to load settings.');
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	const handleSave = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setSaving(true);
 		setMessage('');
+		setErrors({});
 
 		try {
-			const response = await fetch(`${kiKraftAdmin.apiUrl}/branding`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-WP-Nonce': kiKraftAdmin.nonce,
-				},
-				body: JSON.stringify(config),
-			});
-
-			if (response.ok) {
+			const response = await settingsAPI.update('branding', config);
+			if (response.success) {
 				setMessage('Branding settings saved successfully!');
-			} else {
-				setMessage('Failed to save settings.');
+				// Update CSS variables
+				document.documentElement.style.setProperty('--kraft-primary-color', config.primary_color);
+				document.documentElement.style.setProperty('--kraft-secondary-color', config.secondary_color);
 			}
-		} catch (error) {
-			console.error('Failed to save branding:', error);
-			setMessage('Error saving settings.');
+		} catch (error: any) {
+			const apiError = error as APIError;
+			if (apiError.data?.errors) {
+				setErrors(apiError.data.errors);
+				setMessage('Validation failed. Please check the fields below.');
+			} else {
+				setMessage(apiError.message || 'Error saving settings.');
+			}
 		} finally {
 			setSaving(false);
 		}
 	};
+
+	if (loading) {
+		return (
+			<div className="settings-tab whitelabel-tab">
+				<p>Loading settings...</p>
+			</div>
+		);
+	}
 
 	return (
 		<div className="settings-tab whitelabel-tab">
@@ -64,7 +96,11 @@ const WhiteLabelTab: React.FC = () => {
 			<p>Customize the appearance and branding of the KI Kraft plugin.</p>
 
 			{message && (
-				<div className={`notice ${message.includes('successfully') ? 'notice-success' : 'notice-error'}`}>
+				<div 
+					className={`notice ${message.includes('successfully') ? 'notice-success' : 'notice-error'}`}
+					role="status"
+					aria-live="polite"
+				>
 					<p>{message}</p>
 				</div>
 			)}
@@ -80,8 +116,10 @@ const WhiteLabelTab: React.FC = () => {
 							id="product_name"
 							value={config.product_name}
 							onChange={(e) => setConfig({ ...config, product_name: e.target.value })}
+							aria-describedby="product_name_desc"
 						/>
-						<p className="description">The name displayed in the plugin interface</p>
+						<p className="description" id="product_name_desc">The name displayed in the plugin interface</p>
+						{errors.product_name && <p className="error-text">{errors.product_name}</p>}
 					</div>
 
 					<div className="form-group">
@@ -92,7 +130,10 @@ const WhiteLabelTab: React.FC = () => {
 							value={config.logo_url}
 							onChange={(e) => setConfig({ ...config, logo_url: e.target.value })}
 							placeholder="https://example.com/logo.png"
+							aria-describedby="logo_url_desc"
 						/>
+						<p className="description" id="logo_url_desc">URL to your custom logo image</p>
+						{errors.logo_url && <p className="error-text">{errors.logo_url}</p>}
 						{config.logo_url && (
 							<div className="preview">
 								<img src={config.logo_url} alt="Logo preview" style={{ maxHeight: '60px' }} />
@@ -108,14 +149,18 @@ const WhiteLabelTab: React.FC = () => {
 								id="primary_color"
 								value={config.primary_color}
 								onChange={(e) => setConfig({ ...config, primary_color: e.target.value })}
+								aria-describedby="primary_color_desc"
 							/>
 							<input
 								type="text"
 								value={config.primary_color}
 								onChange={(e) => setConfig({ ...config, primary_color: e.target.value })}
 								placeholder="#3b82f6"
+								pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
 							/>
 						</div>
+						<p className="description" id="primary_color_desc">Main brand color (hex format)</p>
+						{errors.primary_color && <p className="error-text">{errors.primary_color}</p>}
 					</div>
 
 					<div className="form-group">
@@ -126,14 +171,18 @@ const WhiteLabelTab: React.FC = () => {
 								id="secondary_color"
 								value={config.secondary_color}
 								onChange={(e) => setConfig({ ...config, secondary_color: e.target.value })}
+								aria-describedby="secondary_color_desc"
 							/>
 							<input
 								type="text"
 								value={config.secondary_color}
 								onChange={(e) => setConfig({ ...config, secondary_color: e.target.value })}
 								placeholder="#60a5fa"
+								pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
 							/>
 						</div>
+						<p className="description" id="secondary_color_desc">Secondary brand color (hex format)</p>
+						{errors.secondary_color && <p className="error-text">{errors.secondary_color}</p>}
 					</div>
 				</div>
 
@@ -147,7 +196,10 @@ const WhiteLabelTab: React.FC = () => {
 							value={config.footer_text}
 							onChange={(e) => setConfig({ ...config, footer_text: e.target.value })}
 							rows={3}
+							aria-describedby="footer_text_desc"
 						/>
+						<p className="description" id="footer_text_desc">Custom footer text displayed in the chatbot</p>
+						{errors.footer_text && <p className="error-text">{errors.footer_text}</p>}
 					</div>
 
 					<div className="form-group">
@@ -158,7 +210,10 @@ const WhiteLabelTab: React.FC = () => {
 							value={config.privacy_url}
 							onChange={(e) => setConfig({ ...config, privacy_url: e.target.value })}
 							placeholder="https://example.com/privacy"
+							aria-describedby="privacy_url_desc"
 						/>
+						<p className="description" id="privacy_url_desc">Link to your privacy policy</p>
+						{errors.privacy_url && <p className="error-text">{errors.privacy_url}</p>}
 					</div>
 
 					<div className="form-group">
@@ -169,13 +224,31 @@ const WhiteLabelTab: React.FC = () => {
 							value={config.imprint_url}
 							onChange={(e) => setConfig({ ...config, imprint_url: e.target.value })}
 							placeholder="https://example.com/imprint"
+							aria-describedby="imprint_url_desc"
 						/>
+						<p className="description" id="imprint_url_desc">Link to your imprint page (required in Germany)</p>
+						{errors.imprint_url && <p className="error-text">{errors.imprint_url}</p>}
 					</div>
 
 					<div className="form-group">
-						<label>
+						<label htmlFor="favicon_url">Favicon URL</label>
+						<input
+							type="url"
+							id="favicon_url"
+							value={config.favicon_url}
+							onChange={(e) => setConfig({ ...config, favicon_url: e.target.value })}
+							placeholder="https://example.com/favicon.ico"
+							aria-describedby="favicon_url_desc"
+						/>
+						<p className="description" id="favicon_url_desc">URL to your custom favicon</p>
+						{errors.favicon_url && <p className="error-text">{errors.favicon_url}</p>}
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="powered_by">
 							<input
 								type="checkbox"
+								id="powered_by"
 								checked={config.powered_by}
 								onChange={(e) => setConfig({ ...config, powered_by: e.target.checked })}
 							/>
@@ -185,13 +258,13 @@ const WhiteLabelTab: React.FC = () => {
 				</div>
 
 				<div className="form-actions">
-					<button type="submit" className="button button-primary" disabled={saving}>
+					<button type="submit" className="button button-primary" disabled={saving || loading}>
 						{saving ? 'Saving...' : 'Save Branding Settings'}
 					</button>
 				</div>
 			</form>
-		</div>
-	);
+</div>
+);
 };
 
 export default WhiteLabelTab;

@@ -41,6 +41,7 @@ class KI_Kraft_Core {
 	public function activate() {
 		$this->create_tables();
 		$this->setup_capabilities();
+		$this->register_default_settings();
 		flush_rewrite_rules();
 	}
 	
@@ -137,6 +138,7 @@ class KI_Kraft_Core {
 	 */
 	private function load_dependencies() {
 		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-rest.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/rest/class-kraft-ai-chat-settings-rest.php';
 		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-faq.php';
 		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-member.php';
 		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-privacy.php';
@@ -372,10 +374,67 @@ class KI_Kraft_Core {
 	}
 
 	/**
+	 * Register default settings on activation.
+	 */
+	private function register_default_settings() {
+		$settings_groups = array(
+			'general'   => array(
+				'site_enabled'       => true,
+				'default_lang'       => 'de',
+				'cache_enabled'      => true,
+				'cache_ttl'          => 86400,
+				'rate_limit_enabled' => true,
+				'rate_limit_max'     => 60,
+				'rate_limit_window'  => 3600,
+			),
+			'privacy'   => array(
+				'retention_enabled'      => true,
+				'retention_days'         => 365,
+				'external_ai_enabled'    => false,
+				'consent_required'       => true,
+				'data_export_enabled'    => true,
+				'data_erase_enabled'     => true,
+				'collect_local_analytics' => false,
+			),
+			'branding'  => array(
+				'logo_url'        => '',
+				'product_name'    => 'KI Kraft',
+				'primary_color'   => '#3b82f6',
+				'secondary_color' => '#60a5fa',
+				'favicon_url'     => '',
+				'footer_text'     => '',
+				'privacy_url'     => '',
+				'imprint_url'     => '',
+				'powered_by'      => true,
+			),
+			'knowledge' => array(
+				'chunk_max_tokens'  => 500,
+				'chunk_overlap'     => 50,
+				'similarity_threshold' => 0.7,
+				'max_results'       => 5,
+			),
+			'analytics' => array(
+				'enabled'         => true,
+				'retention_days'  => 90,
+				'anonymize_ip'    => true,
+				'track_feedback'  => true,
+			),
+		);
+
+		foreach ( $settings_groups as $group => $defaults ) {
+			$option_name = 'kraft_ai_chat_' . $group;
+			if ( false === get_option( $option_name ) ) {
+				add_option( $option_name, $defaults );
+			}
+		}
+	}
+
+	/**
 	 * Run the plugin.
 	 */
 	public function run() {
 		// Initialize REST API
 		add_action( 'rest_api_init', array( 'KI_Kraft_REST', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Kraft_AI_Chat_Settings_REST', 'register_routes' ) );
 	}
 }
