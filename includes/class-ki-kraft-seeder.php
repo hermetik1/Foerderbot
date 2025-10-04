@@ -69,11 +69,11 @@ function ki_kraft_seed_sample_data() {
  */
 function ki_kraft_add_seed_menu() {
 	add_submenu_page(
-		'ki-kraft',
-		__( 'Seed Data', 'ki-kraft' ),
-		__( 'Seed Data', 'ki-kraft' ),
+		'kraft-ai-chat',
+		__( 'Seed Data', KRAFT_AI_CHAT_TEXTDOMAIN ),
+		__( 'Seed Data', KRAFT_AI_CHAT_TEXTDOMAIN ),
 		'manage_options',
-		'ki-kraft-seed',
+		'kraft-ai-chat-seed',
 		'ki_kraft_render_seed_page'
 	);
 }
@@ -85,16 +85,16 @@ add_action( 'admin_menu', 'ki_kraft_add_seed_menu', 20 );
 function ki_kraft_render_seed_page() {
 	if ( isset( $_POST['seed_data'] ) && check_admin_referer( 'ki_kraft_seed' ) ) {
 		$count = ki_kraft_seed_sample_data();
-		echo '<div class="notice notice-success"><p>' . sprintf( __( 'Successfully added %d sample FAQ entries.', 'ki-kraft' ), $count ) . '</p></div>';
+		echo '<div class="notice notice-success"><p>' . sprintf( __( 'Successfully added %d sample FAQ entries.', KRAFT_AI_CHAT_TEXTDOMAIN ), $count ) . '</p></div>';
 	}
 	?>
 	<div class="wrap">
-		<h1><?php _e( 'Seed Sample Data', 'ki-kraft' ); ?></h1>
-		<p><?php _e( 'This will populate the knowledge base with sample FAQ entries in German.', 'ki-kraft' ); ?></p>
+		<h1><?php _e( 'Seed Sample Data', KRAFT_AI_CHAT_TEXTDOMAIN ); ?></h1>
+		<p><?php _e( 'This will populate the knowledge base with sample FAQ entries in German.', KRAFT_AI_CHAT_TEXTDOMAIN ); ?></p>
 		<form method="post">
 			<?php wp_nonce_field( 'ki_kraft_seed' ); ?>
 			<button type="submit" name="seed_data" class="button button-primary">
-				<?php _e( 'Seed Sample Data', 'ki-kraft' ); ?>
+				<?php _e( 'Seed Sample Data', KRAFT_AI_CHAT_TEXTDOMAIN ); ?>
 			</button>
 		</form>
 	</div>

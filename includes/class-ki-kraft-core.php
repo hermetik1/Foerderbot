@@ -31,8 +31,8 @@ class KI_Kraft_Core {
 		$this->define_public_hooks();
 		
 		// Register activation/deactivation hooks
-		register_activation_hook( KI_KRAFT_PLUGIN_DIR . 'ki-kraft.php', array( $this, 'activate' ) );
-		register_deactivation_hook( KI_KRAFT_PLUGIN_DIR . 'ki-kraft.php', array( $this, 'deactivate' ) );
+		register_activation_hook( KRAFT_AI_CHAT_PLUGIN_DIR . 'ki-kraft.php', array( $this, 'activate' ) );
+		register_deactivation_hook( KRAFT_AI_CHAT_PLUGIN_DIR . 'ki-kraft.php', array( $this, 'deactivate' ) );
 	}
 	
 	/**
@@ -136,13 +136,13 @@ class KI_Kraft_Core {
 	 * Load required dependencies.
 	 */
 	private function load_dependencies() {
-		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-rest.php';
-		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-faq.php';
-		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-member.php';
-		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-privacy.php';
-		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-branding.php';
-		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-indexer.php';
-		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-seeder.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-rest.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-faq.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-member.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-privacy.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-branding.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-indexer.php';
+		require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/class-ki-kraft-seeder.php';
 	}
 
 	/**
@@ -150,7 +150,7 @@ class KI_Kraft_Core {
 	 */
 	private function set_locale() {
 		load_plugin_textdomain(
-			'ki-kraft',
+			KRAFT_AI_CHAT_TEXTDOMAIN,
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);
@@ -169,39 +169,39 @@ class KI_Kraft_Core {
 	 */
 	public function add_admin_menu() {
 		add_menu_page(
-			__( 'KI Kraft', 'ki-kraft' ),
-			__( 'KI Kraft', 'ki-kraft' ),
+			__( 'Kraft AI Chat', KRAFT_AI_CHAT_TEXTDOMAIN ),
+			__( 'Kraft AI Chat', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			'manage_options',
-			'ki-kraft',
+			'kraft-ai-chat',
 			array( $this, 'render_admin_page' ),
 			'dashicons-format-chat',
 			30
 		);
 		
 		add_submenu_page(
-			'ki-kraft',
-			__( 'Dashboard', 'ki-kraft' ),
-			__( 'Dashboard', 'ki-kraft' ),
+			'kraft-ai-chat',
+			__( 'Dashboard', KRAFT_AI_CHAT_TEXTDOMAIN ),
+			__( 'Dashboard', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			'manage_options',
-			'ki-kraft',
+			'kraft-ai-chat',
 			array( $this, 'render_admin_page' )
 		);
 		
 		add_submenu_page(
-			'ki-kraft',
-			__( 'Settings', 'ki-kraft' ),
-			__( 'Settings', 'ki-kraft' ),
+			'kraft-ai-chat',
+			__( 'Settings', KRAFT_AI_CHAT_TEXTDOMAIN ),
+			__( 'Settings', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			'manage_options',
-			'ki-kraft-settings',
+			'kraft-ai-chat-settings',
 			array( $this, 'render_admin_page' )
 		);
 		
 		add_submenu_page(
-			'ki-kraft',
-			__( 'Analytics', 'ki-kraft' ),
-			__( 'Analytics', 'ki-kraft' ),
+			'kraft-ai-chat',
+			__( 'Analytics', KRAFT_AI_CHAT_TEXTDOMAIN ),
+			__( 'Analytics', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			'kk_view_analytics',
-			'ki-kraft-analytics',
+			'kraft-ai-chat-analytics',
 			array( $this, 'render_admin_page' )
 		);
 	}
@@ -217,34 +217,36 @@ class KI_Kraft_Core {
 	 * Enqueue admin assets.
 	 */
 	public function enqueue_admin_assets( $hook ) {
-		if ( strpos( $hook, 'ki-kraft' ) === false ) {
+		if ( strpos( $hook, 'kraft-ai-chat' ) === false ) {
 			return;
 		}
 		
 		wp_enqueue_style(
-			'ki-kraft-admin',
-			KI_KRAFT_PLUGIN_URL . 'assets/admin.css',
+			'kraft-ai-chat-admin',
+			KRAFT_AI_CHAT_PLUGIN_URL . 'assets/admin.css',
 			array(),
-			KI_KRAFT_VERSION
+			KRAFT_AI_CHAT_VERSION
 		);
 		
 		wp_enqueue_script(
-			'ki-kraft-admin',
-			KI_KRAFT_PLUGIN_URL . 'assets/admin.js',
+			'kraft-ai-chat-admin',
+			KRAFT_AI_CHAT_PLUGIN_URL . 'assets/admin.js',
 			array( 'wp-element', 'wp-i18n' ),
-			KI_KRAFT_VERSION,
+			KRAFT_AI_CHAT_VERSION,
 			true
 		);
 		
 		wp_localize_script(
-			'ki-kraft-admin',
-			'kiKraftAdmin',
+			'kraft-ai-chat-admin',
+			'kraftAIChatAdmin',
 			array(
-				'apiUrl'   => rest_url( 'ki_kraft/v1' ),
+				'apiUrl'   => rest_url( KRAFT_AI_CHAT_REST_NS ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'branding' => KI_Kraft_Branding::get_config(),
 			)
 		);
+		
+		wp_set_script_translations( 'kraft-ai-chat-admin', KRAFT_AI_CHAT_TEXTDOMAIN );
 	}
 
 	/**
@@ -252,7 +254,10 @@ class KI_Kraft_Core {
 	 */
 	private function define_public_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_public_assets' ) );
-		add_shortcode( 'ki_kraft_chatbot', array( $this, 'render_chatbot_shortcode' ) );
+		// Register canonical shortcode
+		add_shortcode( 'kraft_ai_chat_chatbot', array( $this, 'render_chatbot_shortcode' ) );
+		// Register deprecated shortcode with warning
+		add_shortcode( 'ki_kraft_chatbot', array( $this, 'render_deprecated_chatbot_shortcode' ) );
 		add_action( 'init', array( $this, 'register_blocks' ) );
 	}
 	
@@ -261,36 +266,38 @@ class KI_Kraft_Core {
 	 */
 	public function enqueue_public_assets() {
 		wp_enqueue_style(
-			'ki-kraft-widget',
-			KI_KRAFT_PLUGIN_URL . 'assets/widget.css',
+			'kraft-ai-chat-widget',
+			KRAFT_AI_CHAT_PLUGIN_URL . 'assets/widget.css',
 			array(),
-			KI_KRAFT_VERSION
+			KRAFT_AI_CHAT_VERSION
 		);
 		
 		wp_enqueue_script(
-			'ki-kraft-widget',
-			KI_KRAFT_PLUGIN_URL . 'assets/widget.js',
+			'kraft-ai-chat-widget',
+			KRAFT_AI_CHAT_PLUGIN_URL . 'assets/widget.js',
 			array(),
-			KI_KRAFT_VERSION,
+			KRAFT_AI_CHAT_VERSION,
 			true
 		);
 		
 		wp_localize_script(
-			'ki-kraft-widget',
-			'KIKraftConfig',
+			'kraft-ai-chat-widget',
+			'kraftAIChatConfig',
 			array(
-				'apiUrl'   => rest_url( 'ki_kraft/v1' ),
+				'apiUrl'   => rest_url( KRAFT_AI_CHAT_REST_NS ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'user'     => $this->get_user_config(),
 				'branding' => KI_Kraft_Branding::get_config(),
 				'i18n'     => array(
-					'send'       => __( 'Send', 'ki-kraft' ),
-					'typing'     => __( 'Typing...', 'ki-kraft' ),
-					'placeholder' => __( 'Type your message...', 'ki-kraft' ),
-					'close'      => __( 'Close', 'ki-kraft' ),
+					'send'        => __( 'Send', KRAFT_AI_CHAT_TEXTDOMAIN ),
+					'typing'      => __( 'Typing...', KRAFT_AI_CHAT_TEXTDOMAIN ),
+					'placeholder' => __( 'Type your message...', KRAFT_AI_CHAT_TEXTDOMAIN ),
+					'close'       => __( 'Close', KRAFT_AI_CHAT_TEXTDOMAIN ),
 				),
 			)
 		);
+		
+		wp_set_script_translations( 'kraft-ai-chat-widget', KRAFT_AI_CHAT_TEXTDOMAIN );
 	}
 	
 	/**
@@ -326,6 +333,26 @@ class KI_Kraft_Core {
 	}
 	
 	/**
+	 * Render deprecated chatbot shortcode with warning.
+	 */
+	public function render_deprecated_chatbot_shortcode( $atts ) {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			_doing_it_wrong(
+				'ki_kraft_chatbot',
+				sprintf(
+					/* translators: 1: Deprecated shortcode, 2: New shortcode */
+					__( 'The %1$s shortcode is deprecated. Please use %2$s instead.', KRAFT_AI_CHAT_TEXTDOMAIN ),
+					'<code>[ki_kraft_chatbot]</code>',
+					'<code>[kraft_ai_chat_chatbot]</code>'
+				),
+				KRAFT_AI_CHAT_VERSION
+			);
+		}
+		
+		return $this->render_chatbot_shortcode( $atts );
+	}
+	
+	/**
 	 * Register Gutenberg blocks.
 	 */
 	public function register_blocks() {
@@ -334,11 +361,11 @@ class KI_Kraft_Core {
 		}
 		
 		register_block_type(
-			'ki-kraft/chatbot',
+			'kraft-ai-chat/chatbot',
 			array(
-				'editor_script'   => 'ki-kraft-block-editor',
-				'editor_style'    => 'ki-kraft-block-editor',
-				'style'           => 'ki-kraft-widget',
+				'editor_script'   => 'kraft-ai-chat-block-editor',
+				'editor_style'    => 'kraft-ai-chat-block-editor',
+				'style'           => 'kraft-ai-chat-widget',
 				'render_callback' => array( $this, 'render_chatbot_shortcode' ),
 			)
 		);

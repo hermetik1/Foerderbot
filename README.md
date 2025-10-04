@@ -1,6 +1,6 @@
-# KI Kraft - Dual Chatbot Plugin
+# Kraft AI Chat - Dual Chatbot Plugin
 
-This repository contains the complete implementation of the KI Kraft WordPress plugin as specified in the readme.md documentation.
+This repository contains the complete implementation of the Kraft AI Chat WordPress plugin as specified in the readme.md documentation.
 
 ## 🚀 Quick Start
 
@@ -17,24 +17,24 @@ This repository contains the complete implementation of the KI Kraft WordPress p
    ```
 
 3. **Activate in WordPress:**
-   - Copy the entire folder to `wp-content/plugins/ki-kraft/`
+   - Copy the entire folder to `wp-content/plugins/kraft-ai-chat/`
    - Activate via WordPress Admin
 
 4. **Initial Setup:**
-   - Go to **KI Kraft → Seed Data** and click "Seed Sample Data"
-   - Go to **KI Kraft → Dashboard** to configure settings
-   - Add the widget to a page with shortcode: `[ki_kraft_chatbot type="faq"]`
+   - Go to **Kraft AI Chat → Seed Data** and click "Seed Sample Data"
+   - Go to **Kraft AI Chat → Dashboard** to configure settings
+   - Add the widget to a page with shortcode: `[kraft_ai_chat_chatbot type="faq"]`
 
 ### Usage
 
 **FAQ Bot (Public):**
 ```
-[ki_kraft_chatbot type="faq"]
+[kraft_ai_chat_chatbot type="faq"]
 ```
 
 **Member Bot (Logged-in users):**
 ```
-[ki_kraft_chatbot type="member"]
+[kraft_ai_chat_chatbot type="member"]
 ```
 
 ## ✨ Features Implemented

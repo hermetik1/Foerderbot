@@ -24,8 +24,12 @@ pluginContent = pluginContent.replace(
 	`Version: ${version}`
 );
 pluginContent = pluginContent.replace(
-	/define\( 'KI_KRAFT_VERSION', '[\d.]+' \);/,
-	`define( 'KI_KRAFT_VERSION', '${version}' );`
+	/define\( 'KRAFT_AI_CHAT_VERSION', '[\d.]+' \);/,
+	`define( 'KRAFT_AI_CHAT_VERSION', '${version}' );`
+);
+pluginContent = pluginContent.replace(
+	/define\( 'KI_KRAFT_VERSION', KRAFT_AI_CHAT_VERSION \);/,
+	`define( 'KI_KRAFT_VERSION', KRAFT_AI_CHAT_VERSION );`
 );
 fs.writeFileSync(pluginFile, pluginContent);
 console.log('✓ Updated ki-kraft.php');

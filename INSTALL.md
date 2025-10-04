@@ -1,8 +1,8 @@
-# KI Kraft Plugin - Installation & Usage Guide
+# Kraft AI Chat Plugin - Installation & Usage Guide
 
 ## 📋 Prerequisites
 
-Before installing KI Kraft, ensure your environment meets these requirements:
+Before installing Kraft AI Chat, ensure your environment meets these requirements:
 
 - WordPress 6.7 or higher
 - PHP 8.1 or higher
@@ -20,7 +20,7 @@ Before installing KI Kraft, ensure your environment meets these requirements:
    npm run build:plugin
    ```
 
-2. Upload `dist/ki-kraft.zip` via WordPress Admin:
+2. Upload `dist/kraft-ai-chat.zip` via WordPress Admin:
    - Navigate to **Plugins → Add New → Upload Plugin**
    - Select the ZIP file and click **Install Now**
    - Click **Activate Plugin**
@@ -30,8 +30,8 @@ Before installing KI Kraft, ensure your environment meets these requirements:
 1. Clone the repository into your WordPress plugins directory:
    ```bash
    cd /path/to/wordpress/wp-content/plugins/
-   git clone https://github.com/hermetik1/Foerderbot.git ki-kraft
-   cd ki-kraft
+   git clone https://github.com/hermetik1/Foerderbot.git kraft-ai-chat
+   cd kraft-ai-chat
    ```
 
 2. Install dependencies and build:
@@ -46,7 +46,7 @@ Before installing KI Kraft, ensure your environment meets these requirements:
 
 ### 1. Activate the Plugin
 
-After activation, KI Kraft will:
+After activation, Kraft AI Chat will:
 - Create necessary database tables
 - Set up default capabilities for administrators
 - Add the "KI Kraft" menu to your WordPress admin
@@ -97,7 +97,7 @@ Add the FAQ bot to any page or post using:
 
 **Gutenberg Block:**
 1. Add a new block
-2. Search for "KI Kraft Chatbot"
+2. Search for "Kraft AI Chat Chatbot"
 3. Select the block and configure the type to "FAQ"
 
 ### Member Bot (for logged-in users)
@@ -110,7 +110,7 @@ For authenticated users with enhanced features:
 ```
 
 **Gutenberg Block:**
-1. Add "KI Kraft Chatbot" block
+1. Add "Kraft AI Chat Chatbot" block
 2. Set type to "Member"
 
 ## 🎨 Customizing the Widget
@@ -186,7 +186,7 @@ npm run build:plugin
 ### File Structure
 
 ```
-ki-kraft/
+kraft-ai-chat/
 ├── ki-kraft.php              # Main plugin file
 ├── includes/                 # PHP backend
 ├── admin/                    # React admin interface
@@ -222,7 +222,7 @@ All REST endpoints are under `/wp-json/ki_kraft/v1/`:
 
 ### Widget Not Appearing
 
-1. Check if JavaScript is loaded: View page source and search for `ki-kraft-widget`
+1. Check if JavaScript is loaded: View page source and search for `kraft-ai-chat-widget`
 2. Check browser console for errors
 3. Ensure the shortcode is correctly formatted
 4. Clear WordPress and browser caches

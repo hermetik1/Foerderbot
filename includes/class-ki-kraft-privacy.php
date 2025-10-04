@@ -35,8 +35,8 @@ class KI_Kraft_Privacy {
 	 * Register data exporter.
 	 */
 	public static function register_exporter( $exporters ) {
-		$exporters['ki-kraft'] = array(
-			'exporter_friendly_name' => __( 'KI Kraft Chat Data', 'ki-kraft' ),
+		$exporters['kraft-ai-chat'] = array(
+			'exporter_friendly_name' => __( 'Kraft AI Chat Data', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			'callback'               => array( __CLASS__, 'export_user_data' ),
 		);
 		return $exporters;
@@ -46,8 +46,8 @@ class KI_Kraft_Privacy {
 	 * Register data eraser.
 	 */
 	public static function register_eraser( $erasers ) {
-		$erasers['ki-kraft'] = array(
-			'eraser_friendly_name' => __( 'KI Kraft Chat Data', 'ki-kraft' ),
+		$erasers['kraft-ai-chat'] = array(
+			'eraser_friendly_name' => __( 'Kraft AI Chat Data', KRAFT_AI_CHAT_TEXTDOMAIN ),
 			'callback'             => array( __CLASS__, 'erase_user_data' ),
 		);
 		return $erasers;
