@@ -247,6 +247,18 @@
 	color: #991b1b;
 }
 
+.notice-warning {
+	background: #fffbeb;
+	border-color: var(--kk-warning);
+	color: #92400e;
+}
+
+.notice-info {
+	background: #eff6ff;
+	border-color: var(--kk-primary);
+	color: #1e40af;
+}
+
 .knowledge-table, .analytics-table {
 	width: 100%;
 	border-collapse: collapse;

@@ -142,6 +142,7 @@ class KI_Kraft_Core {
 		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-privacy.php';
 		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-branding.php';
 		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-indexer.php';
+		require_once KI_KRAFT_PLUGIN_DIR . 'includes/class-ki-kraft-seeder.php';
 	}
 
 	/**
