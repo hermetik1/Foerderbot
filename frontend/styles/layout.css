@@ -1,0 +1,94 @@
+/* KI Kraft Widget - Layout Styles */
+
+.kk-rail {
+	position: fixed;
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 36px;
+	background: var(--kk-surface);
+	border: 1px solid var(--kk-border);
+	border-right: none;
+	border-radius: 8px 0 0 8px;
+	padding: 8px 4px;
+	z-index: 9998;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.kk-rail-btn {
+	width: 28px;
+	height: 28px;
+	border: none;
+	background: transparent;
+	color: var(--kk-primary);
+	border-radius: 8px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: filter 0.2s;
+}
+
+.kk-rail-btn:hover {
+	filter: brightness(0.95);
+}
+
+.kk-rail-btn:focus-visible {
+	outline: var(--kk-focus);
+}
+
+.kk-rail-avatar {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	overflow: hidden;
+	cursor: pointer;
+}
+
+.kk-sidebar {
+	position: fixed;
+	right: 0;
+	top: 0;
+	width: 360px;
+	height: 100vh;
+	background: var(--kk-surface);
+	border-left: 1px solid var(--kk-border);
+	z-index: 9999;
+	transform: translateX(100%);
+	transition: transform 0.3s ease;
+	display: flex;
+	flex-direction: column;
+}
+
+.kk-sidebar.open {
+	transform: translateX(0);
+}
+
+.kk-sidebar__header {
+	padding: 16px;
+	border-bottom: 1px solid var(--kk-border);
+}
+
+.kk-chat {
+	flex: 1;
+	overflow-y: auto;
+	padding: 16px;
+}
+
+.kk-composer {
+	padding: 16px;
+	border-top: 1px solid var(--kk-border);
+}
+
+@media (max-width: 640px) {
+	.kk-sidebar {
+		width: 100%;
+	}
+	
+	.kk-rail-btn {
+		width: 44px;
+		height: 44px;
+	}
+}

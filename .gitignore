@@ -1,0 +1,20 @@
+# KI Kraft Plugin
+
+node_modules/
+vendor/
+dist/
+assets/build/
+.DS_Store
+*.log
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.env
+.env.local
+composer.phar
+phpcs.xml.dist
+phpstan.neon.dist

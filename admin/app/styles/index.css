@@ -1,0 +1,50 @@
+/* KI Kraft Admin Styles */
+
+:root {
+	--kk-primary: #3b82f6;
+	--kk-primary-contrast: #ffffff;
+	--kk-surface: #ffffff;
+	--kk-surface-2: #f8fafc;
+	--kk-border: #e5e7eb;
+	--kk-text: #111827;
+	--kk-text-muted: #6b7280;
+	--kk-focus: 0 0 0 3px rgba(59, 130, 246, 0.35);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+.ki-kraft-dashboard {
+	padding: 20px;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.dashboard-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 20px;
+	margin-top: 20px;
+}
+
+.dashboard-card {
+	background: var(--kk-surface);
+	border: 1px solid var(--kk-border);
+	border-radius: 8px;
+	padding: 20px;
+}
+
+.dashboard-card h2 {
+	margin-top: 0;
+	color: var(--kk-text);
+}
+
+.settings-tab {
+	padding: 20px;
+}
+
+.settings-tab h2 {
+	margin-top: 0;
+	color: var(--kk-text);
+}

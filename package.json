@@ -1,0 +1,39 @@
+{
+  "name": "ki-kraft",
+  "version": "1.0.0",
+  "description": "Dual Chatbot Plugin for WordPress",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run build:admin && npm run build:frontend",
+    "build:admin": "echo 'Building admin...' && echo 'TODO: Add build command'",
+    "build:frontend": "echo 'Building frontend...' && echo 'TODO: Add build command'",
+    "build:plugin": "node scripts/build-plugin.js",
+    "verify": "node scripts/verify-zip.js",
+    "sync-version": "node scripts/sync-version.js",
+    "test": "vitest",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\""
+  },
+  "keywords": [
+    "wordpress",
+    "chatbot",
+    "ai",
+    "faq",
+    "rag"
+  ],
+  "author": "KI Kraft",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "archiver": "^6.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
