@@ -34,9 +34,12 @@ define( 'KI_KRAFT_PLUGIN_DIR', KRAFT_AI_CHAT_PLUGIN_DIR );
 define( 'KI_KRAFT_PLUGIN_URL', KRAFT_AI_CHAT_PLUGIN_URL );
 
 /**
- * Load the comprehensive debug logger for GitHub Copilot analysis
+ * Load the comprehensive debug logger for GitHub Copilot analysis after WordPress is ready
  */
-require KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/debug-logger.php';
+function kraft_ai_load_debug_logger() {
+	require_once KRAFT_AI_CHAT_PLUGIN_DIR . 'includes/debug-logger.php';
+}
+add_action('init', 'kraft_ai_load_debug_logger', 1);
 
 /**
  * The core plugin class that is used to define internationalization,
