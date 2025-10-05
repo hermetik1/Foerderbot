@@ -107,6 +107,7 @@ class KIKraftWidget {
 	private sessionId: string | null = null;
 	private isTyping = false;
 	private isFloating = false;
+	private type: string = 'faq';
 	private sessions: any[] = [];
 	private currentSessionId: string | null = null;
 
@@ -127,6 +128,7 @@ class KIKraftWidget {
 		containers.forEach((container) => {
 			this.container = container as HTMLElement;
 			this.isFloating = this.container.classList.contains('kk-floating');
+			this.type = this.container.dataset.type || 'faq';
 			this.container.classList.add('kk-initialized');
 			this.render();
 		});
@@ -314,6 +316,93 @@ class KIKraftWidget {
 		this.loadSessions();
 	}
 
+	private renderMemberFullScreen() {
+		// Create fullscreen UI attached to body for floating member widgets
+		const branding = window.kraftAIChatBranding;
+		const config = window.kraftAIChatConfig;
+		const savedTheme = localStorage.getItem('kk_theme') || 'light';
+		const sidebarOpen = localStorage.getItem('kk_member_sidebar_open') !== 'false';
+
+		// Check if fullscreen already exists and remove it
+		const existingFullscreen = document.body.querySelector('.kk-fullscreen-wrapper');
+		if (existingFullscreen) {
+			existingFullscreen.remove();
+		}
+
+		// Create a wrapper div to attach to body
+		const wrapper = document.createElement('div');
+		wrapper.className = 'kk-fullscreen-wrapper';
+		wrapper.innerHTML = `
+			<div class="kk-fullscreen" role="application" aria-label="Mitglieder-Chat">
+				<aside class="kk-rail" data-theme="${savedTheme}" aria-label="Navigation">
+					${
+						config.user.loggedIn && config.user.avatarUrl
+							? `<img src="${config.user.avatarUrl}" class="kk-rail-avatar" alt="${config.user.displayName || 'User'}" />`
+							: '<div class="kk-rail-btn kk-rail-avatar" title="Profil">👤</div>'
+					}
+					<button class="kk-rail-btn kk-rail-new" title="Neue Unterhaltung">＋</button>
+					<button class="kk-rail-btn kk-rail-collapse" title="Seitenleiste ein-/ausklappen">❮</button>
+					<button class="kk-rail-btn kk-rail-search" title="Suchen">🔎</button>
+					<div class="kk-rail-lang" aria-label="Sprache">EN</div>
+					<button class="kk-rail-btn kk-rail-settings" title="Einstellungen">⚙️</button>
+				</aside>
+
+				<section class="kk-sidebar ${sidebarOpen ? 'open' : ''}" data-theme="${savedTheme}" aria-label="Chatbereich">
+					<header class="kk-sidebar__header">
+						<div class="kk-header-left">
+							<div class="kk-brand">
+								${branding.logo_url ? `<img class="kk-brand-logo" src="${branding.logo_url}" alt="${branding.product_name}" />` : ''}
+								<span class="kk-brand-title">${branding.advisor_header_title || 'Berater-Chat'}</span>
+							</div>
+							<div class="kk-conv-title"></div>
+						</div>
+						<div class="kk-header-actions">
+							<button class="kk-header-close" aria-label="Schließen">✕</button>
+						</div>
+					</header>
+
+					<div class="kk-body">
+						<nav class="kk-history" aria-label="Conversations">
+							<div class="kk-history-search">
+								<input type="search" class="kk-history-search-input" placeholder="Search..." />
+							</div>
+							<button class="kk-new-chat-btn">+ New Chat</button>
+							<div class="kk-history-list">
+								<!-- Conversation items will be rendered here -->
+							</div>
+						</nav>
+
+						<main class="kk-chat" role="log" aria-live="polite" aria-relevant="additions">
+							<div class="kk-messages">
+								<!-- Messages will be rendered here -->
+							</div>
+						</main>
+					</div>
+
+					<footer class="kk-composer">
+						<button class="kk-mic-btn" aria-label="Spracheingabe">🎤</button>
+						<textarea class="kk-input" rows="1" placeholder="Nachricht schreiben..."></textarea>
+						<button class="kk-send-btn" aria-label="Senden">✈️</button>
+					</footer>
+
+					<div class="kk-legal">
+						<span class="kk-legal-text">${branding.footer_text || ''}</span>
+						${branding.privacy_url ? `<a class="kk-legal-link" href="${branding.privacy_url}">Datenschutzerklärung</a>` : ''}
+					</div>
+				</section>
+			</div>
+		`;
+
+		// Attach to body
+		document.body.appendChild(wrapper);
+
+		// Update container reference to the new wrapper for event listeners
+		this.container = wrapper;
+		this.sidebarOpen = sidebarOpen;
+		this.attachEventListeners();
+		this.loadSessions();
+	}
+
 	private renderLoginPrompt() {
 		if (!this.container) return;
 
@@ -396,7 +485,15 @@ class KIKraftWidget {
 		// For floating mode
 		const floatingBubble = this.container.querySelector('.kk-floating-bubble');
 		if (floatingBubble) {
-			floatingBubble.addEventListener('click', () => this.toggleSidebar());
+			floatingBubble.addEventListener('click', () => {
+				// If member type, force fullscreen mode
+				if (this.type === 'member') {
+					this.renderMemberFullScreen();
+					return;
+				}
+				// FAQ keeps original behavior (toggle panel)
+				this.toggleSidebar();
+			});
 		}
 
 		// Rail buttons (regular mode)
@@ -454,7 +551,11 @@ class KIKraftWidget {
 		// ESC key to close sidebar or fullscreen
 		document.addEventListener('keydown', (e) => {
 			if (e.key === 'Escape') {
-				if (this.container?.querySelector('.kk-fullscreen')) {
+				// Check for body-attached fullscreen first
+				const bodyFullscreen = document.body.querySelector('.kk-fullscreen-wrapper');
+				if (bodyFullscreen) {
+					this.closeFullscreen();
+				} else if (this.container?.querySelector('.kk-fullscreen')) {
 					this.closeFullscreen();
 				} else if (this.sidebarOpen) {
 					this.toggleSidebar();
@@ -556,8 +657,16 @@ class KIKraftWidget {
 		if (!this.container) return;
 		const fullscreen = this.container.querySelector('.kk-fullscreen');
 		if (fullscreen) {
-			// For now, just hide it. In a real app, this might navigate away
-			this.container.style.display = 'none';
+			// Check if this is a body-attached fullscreen
+			const wrapper = document.body.querySelector('.kk-fullscreen-wrapper');
+			if (wrapper) {
+				wrapper.remove();
+				// Restore container reference to original widget element
+				this.container = document.querySelector('.kk-widget.kk-initialized') as HTMLElement;
+			} else {
+				// For now, just hide it. In a real app, this might navigate away
+				this.container.style.display = 'none';
+			}
 		}
 	}
 

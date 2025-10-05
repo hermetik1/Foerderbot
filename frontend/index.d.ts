@@ -60,6 +60,7 @@ declare class KIKraftWidget {
     private sessionId;
     private isTyping;
     private isFloating;
+    private type;
     private sessions;
     private currentSessionId;
     constructor();
@@ -68,6 +69,7 @@ declare class KIKraftWidget {
     private renderFloating;
     private renderRegular;
     private renderFullscreen;
+    private renderMemberFullScreen;
     private renderLoginPrompt;
     private restoreState;
     private saveState;
